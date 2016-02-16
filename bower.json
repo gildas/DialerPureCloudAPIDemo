@@ -24,6 +24,7 @@
   ],
   "dependencies": {
     "bootstrap": "^3.3.6",
-    "bootswatch-dist": "superhero"
+    "bootswatch-dist": "superhero",
+    "PureCloud": "purecloud-api#^0.18.3"
   }
 }
