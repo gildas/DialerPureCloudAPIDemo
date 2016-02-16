@@ -14,7 +14,7 @@
             <li>logoff agents</li>
             <li>Apply Policies</li>
         </ul>
-        <% if (false) { %>
+        <% if (token) { %>
             <p><a class="btn btn-default" href="/Campaigns">Campaigns &raquo;</a></p>
         <% } else { %>
             <p><a class="btn btn-warning disabled" href="/Campaigns">Login! &raquo;</a></p>
@@ -23,7 +23,7 @@
     <div class="col-md-4">
         <h2>Contact List</h2>
         <p>Manipulate Contact Lists.</p>
-        <% if (false) { %>
+        <% if (token) { %>
             <p><a class="btn btn-default" href="/ContactLists">Contact Lists &raquo;</a></p>
         <% } else { %>
             <p><a class="btn btn-warning disabled" href="/ContactLists">Login! &raquo;</a></p>
@@ -32,12 +32,12 @@
     <div class="col-md-4">
         <h2>Skills and Skill Sets</h2>
         <p>Manipulate Interaction Center Skills and Interaction Dialer Skill Sets.</p>
-        <% if (false) { %>
+        <% if (token) { %>
             <p><a class="btn btn-default" href="/Skills">Skills &raquo;</a></p>
         <% } else { %>
             <p><a class="btn btn-warning disabled" href="/Skills">Login! &raquo;</a></p>
         <% } %>
-        <% if (false) { %>
+        <% if (token) { %>
             <p><a class="btn btn-default" href="/SkillSets">Skill Sets &raquo;</a></p>
         <% } else { %>
             <p><a class="btn btn-warning disabled" href="/SkillSets">Login! &raquo;</a></p>

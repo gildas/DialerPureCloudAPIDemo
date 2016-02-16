@@ -8,6 +8,7 @@
     <link rel='stylesheet' href='bower_components/bootswatch-dist/css/bootstrap.min.css' />
     <!-- SCRIPTS  {{{ -->
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/jquery.redirect/jquery.redirect.js"></script>
     <script src="bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
     <script src="bower_components/PureCloud/dist/purecloud-api.js"></script>
     <script language='javascript'>
@@ -16,63 +17,29 @@
       var purecloud_session = new PureCloudSession();
 
       purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
-      console.log('PureCloud session state: ' + purecloud_session.getState());
-
-      var logged_in = purecloud_session.getState();
-
-      function set_login_button()
-      {
-        if (logged_in)
-        {
-          var display_name = '';
-          new UsersApi(purecloud_session).getMe()
-            .done(function(user){
-              display_name = user.displayName;
-            }).error(function(){
-              display_name = '';
-          });
-
-          $("#current_user_displayname").append(display_name);
-          $("#current_user").removeClass('hidden').addClass('show');
-          $("#login").removeClass('show').addClass('hidden');
-        }
-        else
-        {
-          $("#current_user").removeClass('show').addClass('hidden');
-          $("#login").removeClass('hidden').addClass('show');
-        }
-      }
+      <% if (token) { %>
+      purecloud_session.setAuthToken("<%= token %>");
+      <% } %>
 
       function login()
       {
-      console.log("Logging in...");
+        console.log("Logging in...");
         var client_id = "<%= settings.client_id %>";
 
         console.log("PureCloud client_id: " + client_id);
         purecloud_session.authorize(client_id, 'http://localhost:3000/')
           .done(function(){
             console.log('Logged in!');
-            console.log('PureCloud Session: ' + purecloud_session.id);
-            console.log('PureCloud Token: ' + purecloud_session.token);
-            logged_in = purecloud_session.getState();
-          new UsersApi(purecloud_session).getMe()
-            .done(function(user){
-              console.log('display_name: '  +user.displayName);
-          $("#current_user_displayname").append(user.displayName);
-          $("#current_user").removeClass('hidden').addClass('show');
-          $("#login").removeClass('show').addClass('hidden');
-            }).error(function(error){
-              console.log("Error " + error);
-          });
+            console.log('PureCloud Token: ' + purecloud_session.getAuthToken());
+            new UsersApi(purecloud_session).getMe()
+              .done(function(user){
+                console.log('PureClouse User: ' + user.displayName);
+                $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
+              }).error(function(error){
+                console.log('PureClouse User: none, error: ' + error);
+            });
           });
       }
-
-      function logoff()
-      {
-        console.log("Logging off...");
-      }
-
-      $(document).ready(set_login_button);
     </script>
     <!-- SCRIPTS }}} -->
   </head>
@@ -91,13 +58,16 @@
                 <ul class="nav navbar-nav">
                     <li><a href="/">Home</a></li>
                 </ul>
-                <ul id="current_user" class="nav navbar-nav navbar-right hidden">
-                  <li class="active">Hello <div id="current_user_displayname"></div>!</li>
-                  <li><a href="javascript:logoff()" class="btn btn-lg active">Log off</a></li>
+              <% if (token) { %>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="/users/me">Hello <%= current_user.displayName %>!</a></li>
+                  <li><a href="/logoff">Log off</a></li>
                 </ul>
-                <ul id="login" class="nav navbar-nav navbar-right show">
-                  <a href="javascript:login()" class="btn btn-primary btn-lg active">Login</a>
+              <% } else { %>
+                <ul class="nav navbar-nav navbar-right">
+                  <li><a href="javascript:login()" class="btn btn-primary btn-lg active">Login</a></li>
                 </ul>
+              <% } %>
             </div>
         </div>
     </div>
