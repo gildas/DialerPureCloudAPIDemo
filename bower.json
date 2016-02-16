@@ -1,0 +1,25 @@
+{
+  "name": "DialerPureCloudAPIDemo",
+  "description": "a Dialer PureCloud API demo",
+  "main": "app.js",
+  "authors": [
+    "gildas.cherruel@inin.com"
+  ],
+  "license": "Apache v2.0",
+  "keywords": [
+    "PureCloud",
+    "Dialer"
+  ],
+  "homepage": "https://github.com/gildas/DialerPureCloudAPIDemo",
+  "moduleType": [
+    "node"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
