@@ -40,6 +40,13 @@
             });
           });
       }
+
+      function logout()
+      {
+        console.log("Logging out...");
+        purecloud_session.logout();
+      }
+
     </script>
     <!-- SCRIPTS }}} -->
   </head>
@@ -61,7 +68,7 @@
               <% if (token) { %>
                 <ul class="nav navbar-nav navbar-right">
                   <li><a href="/users/me">Hello <%= current_user.displayName %>!</a></li>
-                  <li><a href="/logoff">Log off</a></li>
+                  <li><a href="javascript:logout()">Log off</a></li>
                 </ul>
               <% } else { %>
                 <ul class="nav navbar-nav navbar-right">
