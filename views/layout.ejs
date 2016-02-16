@@ -6,6 +6,75 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='bower_components/bootswatch-dist/css/bootstrap.min.css' />
+    <!-- SCRIPTS  {{{ -->
+    <script src="bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
+    <script src="bower_components/PureCloud/dist/purecloud-api.js"></script>
+    <script language='javascript'>
+      var purecloud_region  = 'com.au';
+      //var purecloud_session = new PureCloudSession('mypurecloud.' + purecloud_region);
+      var purecloud_session = new PureCloudSession();
+
+      purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
+      console.log('PureCloud session state: ' + purecloud_session.getState());
+
+      var logged_in = purecloud_session.getState();
+
+      function set_login_button()
+      {
+        if (logged_in)
+        {
+          var display_name = '';
+          new UsersApi(purecloud_session).getMe()
+            .done(function(user){
+              display_name = user.displayName;
+            }).error(function(){
+              display_name = '';
+          });
+
+          $("#current_user_displayname").append(display_name);
+          $("#current_user").removeClass('hidden').addClass('show');
+          $("#login").removeClass('show').addClass('hidden');
+        }
+        else
+        {
+          $("#current_user").removeClass('show').addClass('hidden');
+          $("#login").removeClass('hidden').addClass('show');
+        }
+      }
+
+      function login()
+      {
+      console.log("Logging in...");
+        var client_id = "<%= settings.client_id %>";
+
+        console.log("PureCloud client_id: " + client_id);
+        purecloud_session.authorize(client_id, 'http://localhost:3000/')
+          .done(function(){
+            console.log('Logged in!');
+            console.log('PureCloud Session: ' + purecloud_session.id);
+            console.log('PureCloud Token: ' + purecloud_session.token);
+            logged_in = purecloud_session.getState();
+          new UsersApi(purecloud_session).getMe()
+            .done(function(user){
+              console.log('display_name: '  +user.displayName);
+          $("#current_user_displayname").append(user.displayName);
+          $("#current_user").removeClass('hidden').addClass('show');
+          $("#login").removeClass('show').addClass('hidden');
+            }).error(function(error){
+              console.log("Error " + error);
+          });
+          });
+      }
+
+      function logoff()
+      {
+        console.log("Logging off...");
+      }
+
+      $(document).ready(set_login_button);
+    </script>
+    <!-- SCRIPTS }}} -->
   </head>
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -22,16 +91,13 @@
                 <ul class="nav navbar-nav">
                     <li><a href="/">Home</a></li>
                 </ul>
-                <% if (current_user) { %>
-                <ul class="nav navbar-nav navbar-right">
-                  <li>Hello <%= current_user.display_name() %>!</li>
-                  <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
+                <ul id="current_user" class="nav navbar-nav navbar-right hidden">
+                  <li class="active">Hello <div id="current_user_displayname"></div>!</li>
+                  <li><a href="javascript:logoff()" class="btn btn-lg active">Log off</a></li>
                 </ul>
-                <% } else { %>
-                <ul class="nav navbar-nav navbar-right">
-                  <li><a href="/login">Login</a></li>
+                <ul id="login" class="nav navbar-nav navbar-right show">
+                  <a href="javascript:login()" class="btn btn-primary btn-lg active">Login</a>
                 </ul>
-                <% } %>
             </div>
         </div>
     </div>
@@ -40,15 +106,10 @@
     <%- body %>
       <hr />
       <footer>
-        <p>iPureCloud  Dialer API Demonstration</p>
+        <p>iPureCloud Dialer API Demonstration</p>
       </footer>
     </div>
 
-    <!-- SCRIPTS  {{{ -->
-    <script src="bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
-    <script src="bower_components/PureCloud/dist/purecloud-api.js"></script>
-    <!-- SCRIPTS }}} -->
   </body>
 </html>
 
