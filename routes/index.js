@@ -21,7 +21,7 @@ router.post('/login', function(req, res, next) {
 
 router.get('/logout', function(req, res, next) {
   console.log('User ' + req.session.user.displayName + ' has logged out, token: ' + req.session.token);
-  console.log('killind session: ' + req.session);
+  console.log('killind session');
   req.session.destroy(function() { res.redirect('/'); });
 });
 

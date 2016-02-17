@@ -12,32 +12,33 @@
     <script src="bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
     <script src="bower_components/PureCloud/dist/purecloud-api.js"></script>
     <script language='javascript'>
-      var purecloud_region  = 'com.au';
-      //var purecloud_session = new PureCloudSession('mypurecloud.' + purecloud_region);
+      //var purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
       var purecloud_session = new PureCloudSession();
 
-      purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
+      purecloud_session.setEnvironment('mypurecloud.<%= settings.purecloud_region %>');
+      if (purecloud_session.getAuthToken())
+      {
+        console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
+        new UsersApi(purecloud_session).getMe()
+          .done(function(user){
+            console.log('PureClouse User: ' + user.displayName);
+            setTimeout(function() { console.log("10 second pause before redirecting to /login"); }, 10000);
+            $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
+          }).error(function(error){
+            console.log('PureClouse User: none, error: ' + error);
+          });
+      }
       <% if (token) { %>
       purecloud_session.setAuthToken("<%= token %>");
       <% } %>
 
       function login()
       {
-        console.log("Logging in...");
-        var client_id = "<%= settings.client_id %>";
-
-        console.log("PureCloud client_id: " + client_id);
-        purecloud_session.authorize(client_id, 'http://localhost:3000/')
+        console.log("Logging in to " + purecloud_session._host + '...');
+        console.log("PureCloud application id: <%= settings.application_id %>");
+        purecloud_session.authorize("<%= settings.application_id %>", 'http://localhost:<%= settings.port %>/')
           .done(function(){
             console.log('Logged in!');
-            console.log('PureCloud Token: ' + purecloud_session.getAuthToken());
-            new UsersApi(purecloud_session).getMe()
-              .done(function(user){
-                console.log('PureClouse User: ' + user.displayName);
-                $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
-              }).error(function(error){
-                console.log('PureClouse User: none, error: ' + error);
-            });
           });
       }
 
@@ -45,6 +46,7 @@
       {
         console.log("Logging out...");
         purecloud_session.logout();
+        window.location.replace('/logout');
       }
 
     </script>

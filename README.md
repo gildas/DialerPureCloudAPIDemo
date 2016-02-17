@@ -60,6 +60,30 @@ npm install
 bower install
 ```
 
+Configuration
+-------------
+
+In the root folder of the project, write a config.json file, like this:
+
+```json
+{
+  "port": 3000,
+  "purecloud": {
+    "region":      "AU",
+    "application": "6d963fda-34ee-2r00-9b43-97436acde4ff"
+  }
+}
+```
+
+An example is provided in [config-sample.json](../blob/master/config-sample.json).
+
+Notes:
+- To use the default values, you can omit the value in the JSON.
+- The default port is 3000
+- The default region is US
+- Valid regions are: APAC, AU, EMEA, EU, IE, JP, US.
+- Provide the actual application ID from your [PureCloud OAUTH Settings](http://developer.mypurecloud.com/api/rest/authorization/).
+
 Run
 ---
 
@@ -69,6 +93,22 @@ npm start
 ```
 
 in the main folder of the project.
+
+You can override the configuration set in the config.json using environment variables and command line options:
+
+```sh
+npm start -- --port 1234
+```
+
+On Mac OS/Linux:
+```sh
+PORT=1234 npm start
+```
+
+On Windows:
+```posh
+$env:PORT=1234 ; npm start
+```
 
 If you want extra debugging messages to show:
 
