@@ -16,20 +16,21 @@
       var purecloud_session = new PureCloudSession();
 
       purecloud_session.setEnvironment('mypurecloud.<%= settings.purecloud_region %>');
+      <% if (token) { %>
+      purecloud_session.setAuthToken("<%= token %>");
+      <% } else { %>
       if (purecloud_session.getAuthToken())
       {
         console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
         new UsersApi(purecloud_session).getMe()
           .done(function(user){
-            console.log('PureClouse User: ' + user.displayName);
-            setTimeout(function() { console.log("10 second pause before redirecting to /login"); }, 10000);
+            console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
+            //setTimeout(function() { console.log("10 second pause before redirecting to /login"); }, 10000);
             $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
           }).error(function(error){
-            console.log('PureClouse User: none, error: ' + error);
+            console.log('PureCloud User: none, error: ' + error);
           });
       }
-      <% if (token) { %>
-      purecloud_session.setAuthToken("<%= token %>");
       <% } %>
 
       function login()
