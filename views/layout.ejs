@@ -18,6 +18,7 @@
 
       purecloud_session.setEnvironment('mypurecloud.<%= settings.purecloud_region %>');
       <% if (token) { %>
+        console.log("Received token from Web Session: <%= token %>");
       purecloud_session.setAuthToken("<%= token %>");
       <% } else { %>
       if (purecloud_session.getAuthToken())
