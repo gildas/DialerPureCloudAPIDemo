@@ -1,0 +1,43 @@
+<% layout('layout') -%>
+
+<script>
+var last_data = null;
+
+new OutboundApi(purecloud_session).getCampaigns()
+  .done(generate_view)
+  .error(function(error){
+    console.log(error);
+  });
+
+function next_page()
+{
+  purecloud_session.get(last_data.nextUri).done(generate_view);
+}
+
+function previous_page()
+{
+  purecloud_session.get(last_data.previousUri).done(generate_view);
+}
+
+function generate_view(data)
+{
+  console.dir(data);
+  last_data = data;
+  var template = $('#campaigns_template').html();
+  var html     = Mustache.to_html(template, data);
+  $('#campaigns_view').html(html);
+}
+</script>
+
+<script id="campaigns_template" type="text/template">
+<table class="table table-striped">
+  <tr><th>{{Total}} Campaigns</th></tr>
+  {{#entities}}
+  <tr><td><a href="/campaign/{{id}}" >{{name}}</a></td></tr>
+  {{/entities}}
+</table>
+<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
+<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<div id="campaigns_view"></div>

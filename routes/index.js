@@ -1,11 +1,15 @@
 var express = require('express');
 var router = express.Router();
 
-/* GET home page. */
-router.get('/', function(req, res, next) {
+function trace_session(req) {
   console.log('Session id: ' + req.session.id);
   if (req.session.token) { console.log('Session token: ' + req.session.token); }
   if (req.session.user)  { console.log('Session user:  ' + req.session.user.username); }
+}
+
+/* GET home page. */
+router.get('/', function(req, res, next) {
+  trace_session(req);
   res.render('index', { title: 'DialerPureCloudAPIDemo', token: req.session.token, current_user: req.session.user });
 });
 
@@ -21,9 +25,15 @@ router.post('/login', function(req, res, next) {
 });
 
 router.get('/logout', function(req, res, next) {
-  console.log('User ' + req.session.user.username + ' has logged out, token: ' + req.session.token);
+  trace_session(req);
+  console.log('User ' + req.session.user.username + ' has logged out');
   console.log('killing session ' + req.session.id);
   req.session.destroy(function() { res.redirect('/'); });
+});
+
+router.get('/campaigns', function(req, res, next) {
+  trace_session(req);
+  res.render('campaigns', { title: 'DialerPureCloudAPIDemo', token: req.session.token, current_user: req.session.user });
 });
 
 module.exports = router;
