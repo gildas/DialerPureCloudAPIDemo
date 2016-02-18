@@ -34,3 +34,6 @@ npm-debug.log
 
 # Website configuration
 config.json
+
+# Heroku local configuration
+.env
