@@ -1,0 +1,45 @@
+<% layout('../layout') -%>
+
+<script>
+var outbound_api = new OutboundApi(purecloud_session);
+var contacts  = null;
+
+if (contacts == null)
+{
+  console.log('Loading Contacts for ContactList <%= id %>');
+ outbound_api.createContactListExport('<%= id %>')
+    .done(view_contacts)
+    .error(function(error){
+      console.log(error);
+    });
+}
+else
+{
+  view_contacts(contacts);
+}
+
+function view_contacts(data)
+{
+  console.log("Displaying Contacts ");
+  console.dir(data);
+  contacts = data;
+
+  render_template(contacts, 'contacts_view', 'contacts_template');
+}
+</script>
+
+<script id="contacts_template" type="text/template">
+<h4>Contacts</h4>
+<hr/>
+
+<dl class="dl-horizontal">
+</dl>
+</script>
+
+<h2>Details</h2>
+
+<div id="contacts_view"></div>
+
+<div>
+  <a href="/ContactLists">Back to List</a>
+</div>

@@ -7,7 +7,7 @@ var contactlist  = null;
 if (contactlist == null)
 {
   console.log('Loading ContactList <%= id %>');
- outbound_api.getContactList('<%= id %>')
+ outbound_api.getContactList('<%= id %>', true, true, true)
     .done(view_contactlist)
     .error(function(error){
       console.log(error);
@@ -35,10 +35,11 @@ function view_contactlist(data)
 <dl class="dl-horizontal">
   <dt>Name:</dt><dd>{{name}}, version {{version}}</dd>
   <dt>{{columnNames.length}} Columns:<dt><dd>{{#columnNames}} {{.}}, {{/columnNames}}</dd>
+  <dt># Contacts:</dt><dd>{{size}}</dd>
 </dl>
 
 <ul>
-  <li><a href="/ContactLists/{{id}}/Contacts">List</a> all contacts</li>
+  <li><a href="/ContactLists/{{id}}/Contacts/export">Export</a> all contacts</li>
   <li><a href="/ContactLists/{{id}}/Contacts/new">Insert</a> a new contact</li>
   <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Upload</a> many contacts</li>
   <!-- These are actually column modifications -->
