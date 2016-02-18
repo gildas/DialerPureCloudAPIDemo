@@ -1,0 +1,54 @@
+<% layout('../layout') -%>
+
+<script>
+var contactlists = null;
+
+if (contactlists == null)
+{
+  new OutboundApi(purecloud_session).getContactlists()
+    .done(view_contactlists)
+    .error(function(error){
+      console.log(error);
+    });
+}
+else
+{
+  view_contactlists(contactlists);
+}
+
+function next_page()
+{
+  purecloud_session.get(last_data.nextUri).done(view_contactlists);
+}
+
+function previous_page()
+{
+  purecloud_session.get(last_data.previousUri).done(view_contactlists);
+}
+
+function view_contactlists(data)
+{
+  console.log("Displaying %d ContactLists", data.total);
+  console.dir(data);
+  contactlists = data;
+  render_template(contactlists, 'contactlists_view', 'contactlists_template');
+  $('a.on_click_contactlist').on('click', on_click_contactlist);
+}
+</script>
+
+<script id="contactlists_template" type="text/template">
+<h3>Contact Lists</h3>
+<table class="table">
+  {{#entities}}
+  <tr><td><a href="/contactlists/{{id}}" >{{name}}</a></td></tr>
+  {{/entities}}
+</table>
+<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
+<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<h2>Index</h2>
+
+<div class="row">
+  <div id="contactlists_view" class="col-md-4"></div>
+</div>
