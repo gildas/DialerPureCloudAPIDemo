@@ -31,9 +31,4 @@ router.get('/logout', function(req, res, next) {
   req.session.destroy(function() { res.redirect('/'); });
 });
 
-router.get('/campaigns', function(req, res, next) {
-  trace_session(req);
-  res.render('campaigns', { title: 'DialerPureCloudAPIDemo', token: req.session.token, current_user: req.session.user });
-});
-
 module.exports = router;
