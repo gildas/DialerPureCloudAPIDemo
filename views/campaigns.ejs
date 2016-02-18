@@ -1,45 +1,86 @@
 <% layout('layout') -%>
 
 <script>
-var last_data = null;
+var campaigns = null;
 
-new OutboundApi(purecloud_session).getCampaigns()
-  .done(generate_view)
-  .error(function(error){
-    console.log(error);
-  });
+if (campaigns == null)
+{
+  new OutboundApi(purecloud_session).getCampaigns()
+    .done(view_campaigns)
+    .error(function(error){
+      console.log(error);
+    });
+}
+else
+{
+  view_campaigns(campaigns);
+}
 
 function next_page()
 {
-  purecloud_session.get(last_data.nextUri).done(generate_view);
+  purecloud_session.get(last_data.nextUri).done(view_campaigns);
 }
 
 function previous_page()
 {
-  purecloud_session.get(last_data.previousUri).done(generate_view);
+  purecloud_session.get(last_data.previousUri).done(view_campaigns);
 }
 
-function generate_view(data)
+function view_campaigns(data)
 {
+  console.log("Displaying %d Campaigns", data.total);
   console.dir(data);
-  last_data = data;
-  var template = $('#campaigns_template').html();
-  var html     = Mustache.to_html(template, data);
-  $('#campaigns_view').html(html);
+  campaigns = data;
+  render_template(campaigns, 'campaigns_view', 'campaigns_template');
+  $('a.on_click_campaign').on('click', on_click_campaign);
+}
+
+function on_click_campaign(event)
+{
+  console.log("Campaign Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
+
+  view_campaign($(this).attr('rel'));
+}
+
+function view_campaign(id)
+{
+  console.log("Fetching Campaign " + id);
+  var pos = campaigns.entities.map(function(element) { return element.id; }).indexOf(id);
+
+  console.log("pos=" + pos);
+  render_template(campaigns.entities[pos], 'campaign_view', 'campaign_template');
 }
 </script>
 
 <script id="campaigns_template" type="text/template">
-<table class="table table-striped">
-  <tr><th>{{Total}} Campaigns</th></tr>
+<h3>Campaigns</h3>
+<table class="table">
   {{#entities}}
-  <tr><td><a href="/campaign/{{id}}" >{{name}}</a></td></tr>
+  <!-- <tr><td><a href="/campaign/{{id}}" >{{name}}</a></td></tr> -->
+  <tr><td><a rel="{{id}}" href="#" class="on_click_campaign">{{name}}</a></td></tr>
   {{/entities}}
 </table>
 <button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
 <button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
 </script>
 
+<script id="campaign_template" type="text/template">
+<h4>Details</h4>
+<table class="table">
+  <tr><td>Name        </td><td>{{name}}, version {{version}}</td></tr>
+  <tr><td>Status      </td><td>{{campaignStatus}}</td></tr>
+  <tr><td>Caller Name </td><td>{{callerName}}</td></tr>
+  <tr><td>Queue       </td><td>{{queue.name}}</td></tr>
+  <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
+</table>
+</script>
+
 <h2>Index</h2>
 
-<div id="campaigns_view"></div>
+<div class="row">
+  <div id="campaigns_view" class="col-md-4"></div>
+  <div id="campaign_view"  class="col-md-4"></div>
+</div>
