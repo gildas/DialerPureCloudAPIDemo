@@ -75,7 +75,9 @@ function view_campaign(id)
   <tr><td>Caller Name </td><td>{{callerName}}</td></tr>
   <tr><td>Queue       </td><td>{{queue.name}}</td></tr>
   <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
+  <tr><td>Rule Sets   </td><td>{{#ruleSets}}{{name}},&nbsp;{{/ruleSets}}</td></tr>
 </table>
+<a class="btn btn-default" href="/campaigns/{{id}}/edit">Edit &raquo;</a>
 </script>
 
 <h2>Index</h2>

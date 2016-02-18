@@ -26,7 +26,13 @@ router.get('/', function(req, res, next) {
   res.render('campaigns/index', { title: 'DialerPureCloudAPIDemo' });
 });
 
-// GET /campaigns/:id - Show
+// POST /campaigns - Create
+router.post('/', function(req, res, next) {
+  console.log("Creating %s %s", model);
+  res.status(404).send("Not Implemented");
+});
+
+// GET /campaigns/:id - Read
 router.get('/:id', function(req, res, next) {
   console.log("Showing %s %s", model, req.id);
   res.render('campaigns/show', { title: 'DialerPureCloudAPIDemo', id: req.id });
@@ -38,9 +44,15 @@ router.get('/:id/edit', function(req, res, next) {
   res.render('campaigns/edit', { title: 'DialerPureCloudAPIDemo', id: req.id });
 });
 
-// PUT /campaigns/:id - update
+// PUT /campaigns/:id - Update
 router.put('/:id', function(req, res, next) {
   console.log("Updating %s %s", model, req.id);
+});
+
+// DELETE /campaigns/:id - Destroy
+router.delete('/:id', function(req, res, next) {
+  console.log("Deleting %s %s", model, req.id);
+  res.status(404).send("Not Implemented");
 });
 
 module.exports = router;

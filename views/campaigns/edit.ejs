@@ -1,0 +1,166 @@
+<% layout('../layout') -%>
+
+<script>
+var outbound_api = new OutboundApi(purecloud_session);
+var campaign = null;
+var rulesets = null;
+
+if (rulesets == null)
+{
+  console.log('Loading Rulesets');
+  outbound_api.getRulesets()
+    .done(function(data){ rulesets = data; })
+    .error(function(error){ console.log(error); });
+}
+
+if (campaign == null)
+{
+  console.log('Loading Campaign <%= id %>');
+  outbound_api.getCampaign('<%= id %>')
+    .done(function(data){
+      campaign = data;
+      if (rulesets == null)
+      {
+        console.log('Loading Rulesets');
+        outbound_api.getRulesets()
+          .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
+          .error(function(error){ console.log(error); });
+      }
+      else
+      {
+        view_campaign(campaign, rulesets);
+      }
+    })
+    .error(function(error){ console.log(error); });
+}
+else if (rulesets == null)
+{
+  console.log('Loading Rulesets');
+  outbound_api.getRulesets()
+    .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
+    .error(function(error){ console.log(error); });
+}
+else
+{
+  view_campaign(campaign, rulesets);
+}
+
+function view_campaign(data, rulesets)
+{
+  console.log("Displaying Campaign %s", data.id);
+  console.dir(data);
+  console.log("Available rule sets:");
+  console.dir(rulesets);
+  campaign = data;
+  render_template({
+    campaign: campaign,
+    rulesets: rulesets,
+    selected: function() { return (campaign.ruleSets.indexOf(this.id) != -1) ? "selected" : ""; }
+  }, 'campaign_view', 'campaign_template');
+  $('a.on_click_update').on('click', on_click_update);
+}
+
+function on_click_update(event)
+{
+  console.log("Update Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
+
+  // TODO: if the ruleset has not changed, do not update
+  var ruleset_ids = $('#Campaign_Rulesets').val() || [];
+
+  console.log("Selected ruleset ids:");
+  console.dir(ruleset_ids);
+
+  console.group("Building new rulesets");
+  var new_rulesets = ruleset_ids.map(function(id){
+    console.group("Building ruleset %s", id);
+    console.log("Fetching ruleset");
+    var pos     = rulesets.entities.map(function(entity) { return entity.id; }).indexOf(id);
+    // TODO: If not found ignore?!?
+    var ruleset = rulesets.entities[pos];
+    console.log("ruleset:");
+    console.dir(ruleset);
+
+    var ref = { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
+    console.log("Built:");
+    console.dir(ref);
+    console.groupEnd();
+    return ref;
+    //return { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
+  });
+  console.groupEnd();
+
+  console.log("New rulesets:");
+  console.dir(new_rulesets);
+  console.log("Updating Campaign %s", campaign.id);
+  campaign.ruleSets = new_rulesets;
+  console.dir(campaign);
+  outbound_api.updateCampaign(campaign.id, campaign)
+    .done(function(){
+      console.log("Successfully updated Campaign %s", campaign.id);
+    })
+    .error(function(error){
+      console.error(error);
+    });
+}
+</script>
+
+<script id="campaign_template" type="text/template">
+<h4>Campaign</h4>
+<hr/>
+<!-- <form method="POST" action="/campaigns/{{campaign.id}}"><div class="form-horizontal"> -->
+<div class="form-horizontal">
+  <input id="id" name="id" type="hidden" value="{{campaign.id}}"/>
+  <div class="form-group">
+    <label class="control-label col-md-2" for="Campaign_Name">Name</label>
+    <div class="col-md-10">{{campaign.name}}, version {{campaign.version}}</div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-md-2" for="Campaign_Status">Status</label>
+    <div class="col-md-10">{{campaign.campaignStatus}}</div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-md-2" for="Campaign_CallerName">Caller Name</label>
+    <div class="col-md-10">{{campaign.callerName}}</div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-md-2" for="Campaign_Queue">Queue</label>
+    <div class="col-md-10">{{campaign.queue.name}}</div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-md-2" for="Campaign_ContactList_Name">Contact List</label>
+    <div class="col-md-10">{{campaign.contactList.name}}</div>
+  </div>
+
+  <div class="form-group">
+    <label class="control-label col-md-2" for="Campaign_Rulesets">Rule Sets</label>
+    <div class="col-md-10">
+      <select id="Campaign_Rulesets" name="Campaign_Rulesets" multiple="multiple" size="10">
+      {{#rulesets.entities}}
+        <option value="{{id}}" {{selected}}>{{name}}</option>
+      {{/rulesets.entities}}
+      </select>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md10">
+      <!-- <input type="submit" value="Update" class="btn btn-default on_click_update"/> -->
+      <a  href="#" class="btn btn-primary on_click_update">Update!</a>
+    </div>
+  </div>
+</div>
+</script>
+
+<h2>Edit</h2>
+
+<div id="campaign_view"></div>
+<div>
+  <a href="/Campaigns">Back to List</a>
+</div>
