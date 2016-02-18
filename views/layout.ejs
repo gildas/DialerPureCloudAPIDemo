@@ -52,6 +52,11 @@
         window.location.replace('/logout');
       }
 
+      function render_template(data, target_id, template_id)
+      {
+        console.log("Rendering into %s with template %s", target_id, template_id);
+        $('#' + target_id).html(Mustache.to_html($('#' + template_id).html(), data));
+      }
     </script>
     <!-- SCRIPTS }}} -->
   </head>
