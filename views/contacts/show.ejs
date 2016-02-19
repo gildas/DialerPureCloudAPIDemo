@@ -1,0 +1,66 @@
+<% layout('../layout') -%>
+
+<script>
+var outbound_api = new OutboundApi(purecloud_session);
+var contactlist  = null;
+var contact      = null;
+
+if (contactlist == null)
+{
+  console.log('Loading ContactList <%= contactlist_id %>');
+  outbound_api.getContactList('<%= contactlist_id %>')
+    .done(function(data) {
+      contactlist = data;
+      console.log('Loading Contact <%= id %>');
+      outbound_api.getContactListContactsByContactId('<%= contactlist_id %>', '<%= id %>')
+        .done(view_contact)
+        .error(function(error){ console.log(error); });
+    })
+    .error(function(error){ console.log(error); });
+}
+
+function view_contact(data)
+{
+  console.log("Displaying Contact ", data.id);
+  console.dir(data);
+  contact = data;
+
+  // Unfortunately, columns can have names that cannot be fetched easily
+  // by jQuery once they are used as DOM ids
+  console.log("Create object with safe ids")
+  var blob = {
+    id:             data.id,
+    contactlist_id: data.contactListId,
+    columns:        contactlist.columnNames.map(function(column){
+                      return {
+                        id:    column.replace( /([\/ \.\?])/g, "_"),
+                        name:  column,
+                        value: data.data[column]
+                      }
+                    })
+  };
+
+  console.dir(blob);
+  render_template(blob, 'contact_view', 'contact_template');
+}
+</script>
+
+<script id="contact_template" type="text/template">
+<h4>Contact Details</h4>
+<hr/>
+<dl class="dl-horizontal">
+  {{#columns}}
+  <dt>{{name}}</dt> <dd>{{value}}</dd>
+  {{/columns}}
+</dl>
+
+</script>
+
+<h2>Details</h2>
+
+<div id="contact_view"></div>
+
+<div>
+    <a href="/Contacts/?contactlist_id=<%= contactlist_id %>">Back to Contacts</a>
+  | <a href="/ContactLists/<%= contactlist_id %>">Back to Contact List</a>
+</div>
