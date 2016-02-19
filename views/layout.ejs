@@ -39,7 +39,7 @@
       {
         console.log("Logging in to " + purecloud_session._host + '...');
         console.log("PureCloud application id: <%= settings.application_id %>");
-        console.log("PureCloud rediredct URI: " + window.location.href);
+        console.log("PureCloud redirect URI: " + window.location.href);
         purecloud_session.authorize("<%= settings.application_id %>", window.location.href)
           .done(function(){
             console.log('Logged in!');
