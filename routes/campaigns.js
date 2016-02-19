@@ -2,17 +2,6 @@ var express = require('express');
 var router  = express.Router();
 var model   = 'Campaign';
 
-// Common tracing and locals
-router.use(function(req, res, next) {
-  console.log("%s /campaigns%s", req.method, req.path);
-  console.log('Session id: ' + req.session.id);
-  if (req.session.token) { console.log('Session token: ' + req.session.token); }
-  if (req.session.user)  { console.log('Session user:  ' + req.session.user.username); }
-  res.locals.token        = req.session.token;
-  res.locals.current_user = req.session.user;
-  next();
-});
-
 // grab resource id
 router.param('id', function(req, res, next, id) {
   console.log('id=' + id);

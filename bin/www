@@ -9,6 +9,7 @@ var config = require('nconf');
 var app = require('../app');
 var debug = require('debug')('DialerPureCloudAPIDemo:server');
 var http = require('http');
+var gitrev = require('git-rev');
 
 // Retrieve the configuration
 //  Order: CLI, Environment, config file, defaults.
@@ -38,6 +39,10 @@ config.argv({
     application: 'PLEASE PROVIDE'
   }
 });
+
+gitrev.short(function(value)  { console.log('Git commit: ' + value); });
+gitrev.branch(function(value) { console.log('Git branch: ' + value); });
+gitrev.tag(function(value)    { console.log('Git tag: '    + value); });
 
 /**
  * Get port and store in Express.
