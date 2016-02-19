@@ -11,6 +11,7 @@ var bodyParser = require('body-parser');
 var routes        = require('./routes/index');
 var campaigns     = require('./routes/campaigns');
 var contactlists  = require('./routes/contactlists');
+var contacts      = require('./routes/contacts');
 
 var app = express();
 
@@ -55,6 +56,7 @@ app.use('/', routes);
 app.use('/campaigns', campaigns);
 app.use('/contactlists', contactlists);
 app.use('/contact_lists', contactlists);
+app.use('/contacts', contacts);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
