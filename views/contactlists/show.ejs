@@ -39,9 +39,10 @@ function view_contactlist(data)
 </dl>
 
 <ul>
+  <li><a href="/Contacts/?contactlist_id={{id}}">List</a> all contacts (SLOW)</li>
+  <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
   <li><a href="/ContactLists/{{id}}/Contacts/export">Export</a> all contacts</li>
-  <li><a href="/Contacts/new?contactlist_id={{id}}">Insert</a> a new contact</li>
-  <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Upload</a> many contacts</li>
+  <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Import</a> many contacts</li>
   <!-- These are actually column modifications -->
   <li><a href="/ContactLists/{{id}}/Skill/1">Reset Skill 1</a> for all contacts named <b>Dow</b></li>
   <li><a href="/ContactLists/{{id}}/Skill/1">Update Skill 1 to <b>English</b></a> for all contacts named <b>Dow</b></li>
