@@ -30,7 +30,7 @@ function view_contacts(data)
       .append('<tr id= "contact_view_' + contact_id + '"><td>' + contact_id + '</td></tr>');
     outbound_api.getContactListContactsByContactId(contactlist.id, contact_id)
       .done(view_contact)
-      .error(function(error) { console.error(error); });
+      .fail(function(error) { console.error(error); });
   }
 }
 
