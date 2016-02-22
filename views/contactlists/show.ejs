@@ -24,6 +24,7 @@ function view_contactlist(data)
 
   render_template(contactlist, 'contactlist_view', 'contactlist_template');
   $('#export_contacts').on('click', on_click_export_contacts);
+  $('#update_contacts').on('click', on_click_update_contacts);
 }
 
 function on_click_export_contacts(event)
@@ -41,6 +42,16 @@ function on_click_export_contacts(event)
     .fail(function(error){ console.error(error); });
 }
 
+function on_click_update_contacts(event)
+{
+  console.log("Update Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
+
+  console.log("Search: [%s] == '%s'", $('#update_contacts_SearchColumnName').val(), $('#update_contacts_SearchColumnValue').val());
+  console.log("Change: [%s] == '%s'", $('#update_contacts_ChangeColumnName').val(), $('#update_contacts_ChangeColumnValue').val());
+}
 </script>
 
 <script id="contactlist_template" type="text/template">
@@ -56,16 +67,28 @@ function on_click_export_contacts(event)
 <ul>
   <li><a href="/Contacts/?contactlist_id={{id}}">List</a> all contacts</li>
   <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
-  <li><a href="#" id='export_contacts' rel='{{id}}'>Export</a> all contacts</li>
+  <li><a id="export_contacts" clas="link" href="#" rel="{{id}}">Export</a> all contacts</li>
   <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Import</a> many contacts</li>
   <!-- These are actually column modifications -->
-  <li><a href="/ContactLists/{{id}}/Skill/1">Reset Skill 1</a> for all contacts named <b>Dow</b></li>
-  <li><a href="/ContactLists/{{id}}/Skill/1">Update Skill 1 to <b>English</b></a> for all contacts named <b>Dow</b></li>
-  <!-- -->
-  <li>Assign all contacts named <b>Dow</b> to Campaign X</li>
-  <li>Assign all contacts named <b>Dow</b> to Campaign Y</li>
-  <li>Schedule a call tomorrow in Campaign X for all contacts named <b>Dow</b></li> <!-- POST /Campaign/{{campaign_id}}/Call { when: 'tomorrow' } -->
-  <li>Update Status to all contacts named <b>Dow</b> to <b>Just In Time</b></li><!-- PUT /ContactLists/{{id}} { Status: 'J' } -->
+  <li>
+    Change Column
+      <select id="update_contacts_ChangeColumnName">
+      {{#columnNames}}
+        <option value="{{.}}">{{.}}</option>
+      {{/columnNames}}
+      </select>
+      to
+      <input id="update_contacts_ChangeColumnValue" type="text"/>
+      for all contacts with
+      <select id="update_contacts_SearchColumnName">
+      {{#columnNames}}
+        <option value="{{.}}">{{.}}</option>
+      {{/columnNames}}
+      </select>
+      to
+      <input id="update_contacts_SearchColumnValue" type="text"/>
+      <a id="update_contacts" class="btn btn-default" href="#" rel='{{id}}'>Update!</a>
+  </li>
 </ul>
 </script>
 
