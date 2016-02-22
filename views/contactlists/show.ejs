@@ -35,7 +35,7 @@ function on_click_export_contacts(event)
 
   outbound_api.postContactlistExport($(this).attr('rel'))
     .done(function(data){
-      console.log("Exporting Contact List %s", $(this).attr('rel'));
+      console.log("Exporting Contact List %s", data.id);
       console.dir(data);
     })
     .fail(function(error){ console.error(error); });
