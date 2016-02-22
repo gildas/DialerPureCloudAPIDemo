@@ -27,6 +27,7 @@
     "bootswatch-dist": "superhero",
     "PureCloud": "purecloud-api#^0.18.3",
     "jquery.redirect": "*",
-    "mustache.js": "mustache#^2.2.1"
+    "mustache.js": "mustache#^2.2.1",
+    "jQuery.ajaxRetry": "dcherman/jQuery.ajaxRetry#^0.2.0"
   }
 }

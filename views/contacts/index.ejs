@@ -1,5 +1,6 @@
 <% layout('../layout') -%>
 
+<script src="/bower_components/jQuery.ajaxRetry/src/jQuery.ajaxRetry.js"></script>
 <script>
 var outbound_api = new OutboundApi(purecloud_session);
 var contactlist  = null;
@@ -24,14 +25,27 @@ function view_contacts(data)
   console.dir(data);
 
   render_template(data, 'contacts_view', 'contacts_template');
+  max_tries = 5;
   for (contact_id=1; contact_id <= data.size; contact_id++)
   {
     $('#contacts_view table tbody:last-child')
       .append('<tr id= "contact_view_' + contact_id + '"><td>' + contact_id + '</td></tr>');
-    outbound_api.getContactListContactsByContactId(contactlist.id, contact_id)
-      .done(view_contact)
-      .fail(function(error){
-        console.error(error);
+
+    //outbound_api.getContactListContact(contactlist.id, contact_id)
+    $.ajax({
+      method: 'GET',
+      url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/outbound/contactlists/' + contactlist.id + '/contacts/' + contact_id,
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
+      timeout: 5000,
+      shouldRetry: 5,
+    }).done(view_contact)
+      .fail(function(jqXHR, status){
+          console.error("Error %s to fetch contact %s", status, contact_id);
+          console.dir(jqXHR);
       });
   }
 }
