@@ -10,7 +10,7 @@ if (contactlist == null)
   console.log('Loading ContactList <%= contactlist_id %>');
   outbound_api.getContactList('<%= contactlist_id %>', true, true, true)
     .done(view_contacts)
-    .error(function(error){ console.log(error); });
+    .fail(function(error){ console.error(error); });
 }
 else
 {
@@ -30,7 +30,9 @@ function view_contacts(data)
       .append('<tr id= "contact_view_' + contact_id + '"><td>' + contact_id + '</td></tr>');
     outbound_api.getContactListContactsByContactId(contactlist.id, contact_id)
       .done(view_contact)
-      .fail(function(error) { console.error(error); });
+      .fail(function(error){
+        console.error(error);
+      });
   }
 }
 

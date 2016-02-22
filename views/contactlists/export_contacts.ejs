@@ -9,9 +9,7 @@ if (contacts == null)
   console.log('Loading Contacts for ContactList <%= id %>');
  outbound_api.createContactListExport('<%= id %>')
     .done(view_contacts)
-    .error(function(error){
-      console.log(error);
-    });
+    .fail(function(error){ console.error(error); });
 }
 else
 {

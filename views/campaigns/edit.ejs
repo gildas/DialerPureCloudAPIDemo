@@ -10,7 +10,7 @@ if (rulesets == null)
   console.log('Loading Rulesets');
   outbound_api.getRulesets()
     .done(function(data){ rulesets = data; })
-    .error(function(error){ console.log(error); });
+    .fail(function(error){ console.error(error); });
 }
 
 if (campaign == null)
@@ -24,21 +24,21 @@ if (campaign == null)
         console.log('Loading Rulesets');
         outbound_api.getRulesets()
           .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
-          .error(function(error){ console.log(error); });
+          .fail(function(error){ console.error(error); });
       }
       else
       {
         view_campaign(campaign, rulesets);
       }
     })
-    .error(function(error){ console.log(error); });
+    .fail(function(error){ console.error(error); });
 }
 else if (rulesets == null)
 {
   console.log('Loading Rulesets');
   outbound_api.getRulesets()
     .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
-    .error(function(error){ console.log(error); });
+    .fail(function(error){ console.error(error); });
 }
 else
 {
@@ -98,12 +98,8 @@ function on_click_update(event)
   campaign.ruleSets = new_rulesets;
   console.dir(campaign);
   outbound_api.updateCampaign(campaign.id, campaign)
-    .done(function(){
-      console.log("Successfully updated Campaign %s", campaign.id);
-    })
-    .error(function(error){
-      console.error(error);
-    });
+    .done(function(){ console.log("Successfully updated Campaign %s", campaign.id); })
+    .fail(function(error){ console.error(error); });
 }
 </script>
 

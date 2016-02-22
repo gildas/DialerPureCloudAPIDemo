@@ -7,9 +7,7 @@ if (contactlists == null)
 {
   new OutboundApi(purecloud_session).getContactlists()
     .done(view_contactlists)
-    .error(function(error){
-      console.log(error);
-    });
+    .fail(function(error){ console.error(error); });
 }
 else
 {

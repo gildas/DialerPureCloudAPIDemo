@@ -30,9 +30,8 @@
             console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
             //setTimeout(function() { console.log("10 second pause before redirecting to /login"); }, 10000);
             $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
-          }).error(function(error){
-            console.log('PureCloud User: none, error: ' + error);
-          });
+          })
+          .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
       }
       <% } %>
 

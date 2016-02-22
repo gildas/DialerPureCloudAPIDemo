@@ -14,9 +14,9 @@ if (contactlist == null)
       console.log('Loading Contact <%= id %>');
       outbound_api.getContactListContactsByContactId('<%= contactlist_id %>', '<%= id %>')
         .done(view_contact)
-        .error(function(error){ console.log(error); });
+        .fail(function(error){ console.error(error); });
     })
-    .error(function(error){ console.log(error); });
+    .fail(function(error){ console.error(error); });
 }
 
 function view_contact(data)

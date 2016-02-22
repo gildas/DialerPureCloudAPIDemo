@@ -9,9 +9,7 @@ if (contactlist == null)
   console.log('Loading ContactList <%= contactlist_id %>');
  outbound_api.getContactList('<%= contactlist_id %>', true, true, true)
     .done(view_contact)
-    .error(function(error){
-      console.log(error);
-    });
+    .fail(function(error){ console.error(error); });
 }
 else
 {
@@ -71,9 +69,7 @@ function on_click_create(event)
     console.log("Successfuly added!");
     window.location.href = contactlist.selfUri;
     })
-    .error(function(error){
-      console.error(error);
-    });
+    .fail(function(error){ console.error(error); });
 }
 
 </script>
