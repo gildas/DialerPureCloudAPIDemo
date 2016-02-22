@@ -1,11 +1,12 @@
 <% layout('../layout') -%>
 
 <script>
+var outbound_api = new OutboundApi(purecloud_session);
 var campaigns = null;
 
 if (campaigns == null)
 {
-  new OutboundApi(purecloud_session).getCampaigns()
+  outbound_api.getCampaigns()
     .done(view_campaigns)
     .fail(function(error){ console.error(error); });
 }
@@ -30,7 +31,7 @@ function view_campaigns(data)
   console.dir(data);
   campaigns = data;
   render_template(campaigns, 'campaigns_view', 'campaigns_template');
-  $('a.on_click_campaign').on('click', on_click_campaign);
+  $('a.show_campaign').on('click', on_click_campaign);
 }
 
 function on_click_campaign(event)
@@ -50,6 +51,49 @@ function view_campaign(id)
 
   console.log("pos=" + pos);
   render_template(campaigns.entities[pos], 'campaign_view', 'campaign_template');
+  $('#schedule_call').on('click', on_click_schedule_call);
+}
+
+function on_click_schedule_call(event)
+{
+  console.log("ScheduleCall Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
+
+  var campaign_id = $(this).attr('rel');
+  var pos         = campaigns.entities.map(function(element) { return element.id; }).indexOf(campaign_id);
+  var campaign    = campaigns.entities[pos];
+
+  console.log("Fetching Schedules for campaign %s", campaign.id);
+  outbound_api.getSchedulesCampaign(campaign_id)
+    .done(function(data){
+      console.log("Current Schedule:")
+      console.dir(data);
+
+      var start_time = new Date();
+
+      start_time.setUTCDate(start_time.getUTCDate() + 1);
+      start_time.setHours(10);
+      start_time.setMinutes(0);
+      start_time.setSeconds(0);
+
+      var end_time = new Date(start_time);
+
+      end_time.setMinutes(end_time.getMinutes() + 30);
+
+      data.intervals.push({
+        start: start_time.toISOString(),
+        end:   end_time.toISOString(),
+      });
+      outbound_api.putSchedulesCampaign(campaign_id, data)
+        .done(function(data){
+          console.log("scheduled!")
+          console.dir(data);
+        })
+        .fail(function(error){ console.error(error); });
+    })
+    .fail(function(error){ console.error(error); });
 }
 </script>
 
@@ -58,7 +102,7 @@ function view_campaign(id)
 <table class="table">
   {{#entities}}
   <!-- <tr><td><a href="/campaign/{{id}}" >{{name}}</a></td></tr> -->
-  <tr><td><a rel="{{id}}" href="#" class="on_click_campaign">{{name}}</a></td></tr>
+  <tr><td><a class="show_campaign" href="#" rel="{{id}}">{{name}}</a></td></tr>
   {{/entities}}
 </table>
 <button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
@@ -75,7 +119,8 @@ function view_campaign(id)
   <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
   <tr><td>Rule Sets   </td><td>{{#ruleSets}}{{name}},&nbsp;{{/ruleSets}}</td></tr>
 </table>
-<a class="btn btn-default" href="/campaigns/{{id}}/edit">Edit &raquo;</a>
+<a id="edit_campaign" class="btn btn-default" href="/campaigns/{{id}}/edit">Edit &raquo;</a>
+<a id="schedule_call" class="btn btn-default" href="#" rel="{{id}}">Schedule</a> calls for tomorrow at 10AM.
 </script>
 
 <h2>Index</h2>
