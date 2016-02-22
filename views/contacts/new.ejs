@@ -7,7 +7,7 @@ var contactlist  = null;
 if (contactlist == null)
 {
   console.log('Loading ContactList <%= contactlist_id %>');
- outbound_api.getContactList('<%= contactlist_id %>', true, true, true)
+ outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
     .done(view_contact)
     .fail(function(error){ console.error(error); });
 }
@@ -64,7 +64,7 @@ function on_click_create(event)
     contact.data[column] = $('#' + column.replace( /([\/ \.\?])/g, "_")).val();
   });
   console.dir(contact);
-  outbound_api.createContactListContacts(contactlist.id, [ contact ], priority)
+  outbound_api.postContactlistContacts(contactlist.id, [ contact ], priority)
     .done(function(){
     console.log("Successfuly added!");
     window.location.href = contactlist.selfUri;

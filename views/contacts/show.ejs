@@ -8,11 +8,11 @@ var contact      = null;
 if (contactlist == null)
 {
   console.log('Loading ContactList <%= contactlist_id %>');
-  outbound_api.getContactList('<%= contactlist_id %>')
+  outbound_api.getContactlist('<%= contactlist_id %>')
     .done(function(data) {
       contactlist = data;
       console.log('Loading Contact <%= id %>');
-      outbound_api.getContactListContactsByContactId('<%= contactlist_id %>', '<%= id %>')
+      outbound_api.getContactlistContact('<%= contactlist_id %>', '<%= id %>')
         .done(view_contact)
         .fail(function(error){ console.error(error); });
     })

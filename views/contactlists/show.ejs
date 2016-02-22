@@ -7,7 +7,7 @@ var contactlist  = null;
 if (contactlist == null)
 {
   console.log('Loading ContactList <%= id %>');
- outbound_api.getContactList('<%= id %>', true, true, true)
+ outbound_api.getContactlist('<%= id %>', true, true, true)
     .done(view_contactlist)
     .fail(function(error){ console.error(error); });
 }
@@ -23,7 +23,24 @@ function view_contactlist(data)
   contactlist = data;
 
   render_template(contactlist, 'contactlist_view', 'contactlist_template');
+  $('#export_contacts').on('click', on_click_export_contacts);
 }
+
+function on_click_export_contacts(event)
+{
+  console.log("Export Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
+
+  outbound_api.postContactlistExport($(this).attr('rel'))
+    .done(function(data){
+      console.log("Exporting Contact List %s", $(this).attr('rel'));
+      console.dir(data);
+    })
+    .fail(function(error){ console.error(error); });
+}
+
 </script>
 
 <script id="contactlist_template" type="text/template">
@@ -39,7 +56,7 @@ function view_contactlist(data)
 <ul>
   <li><a href="/Contacts/?contactlist_id={{id}}">List</a> all contacts</li>
   <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
-  <li><a href="/ContactLists/{{id}}/Contacts/export">Export</a> all contacts</li>
+  <li><a href="#" id='export_contacts' rel='{{id}}'>Export</a> all contacts</li>
   <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Import</a> many contacts</li>
   <!-- These are actually column modifications -->
   <li><a href="/ContactLists/{{id}}/Skill/1">Reset Skill 1</a> for all contacts named <b>Dow</b></li>

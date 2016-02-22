@@ -7,7 +7,7 @@ var contacts  = null;
 if (contacts == null)
 {
   console.log('Loading Contacts for ContactList <%= id %>');
- outbound_api.createContactListExport('<%= id %>')
+ outbound_api.postContactilstExport('<%= id %>')
     .done(view_contacts)
     .fail(function(error){ console.error(error); });
 }

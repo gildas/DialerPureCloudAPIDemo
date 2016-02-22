@@ -9,7 +9,7 @@ var contacts     = [];
 if (contactlist == null)
 {
   console.log('Loading ContactList <%= contactlist_id %>');
-  outbound_api.getContactList('<%= contactlist_id %>', true, true, true)
+  outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
     .done(view_contacts)
     .fail(function(error){ console.error(error); });
 }
@@ -31,7 +31,7 @@ function view_contacts(data)
     $('#contacts_view table tbody:last-child')
       .append('<tr id= "contact_view_' + contact_id + '"><td>' + contact_id + '</td></tr>');
 
-    //outbound_api.getContactListContact(contactlist.id, contact_id)
+    //outbound_api.getContactlistContact(contactlist.id, contact_id)
     $.ajax({
       method: 'GET',
       url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/outbound/contactlists/' + contactlist.id + '/contacts/' + contact_id,
