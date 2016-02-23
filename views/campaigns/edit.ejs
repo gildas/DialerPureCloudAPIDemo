@@ -97,7 +97,7 @@ function on_click_update(event)
   console.log("Updating Campaign %s", campaign.id);
   campaign.ruleSets = new_rulesets;
   console.dir(campaign);
-  outbound_api.updateCampaign(campaign.id, campaign)
+  outbound_api.postCampaign(campaign.id, campaign)
     .done(function(){ console.log("Successfully updated Campaign %s", campaign.id); })
     .fail(function(error){ console.error(error); });
 }
