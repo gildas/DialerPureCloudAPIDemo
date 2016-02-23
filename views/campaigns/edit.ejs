@@ -59,8 +59,8 @@ function view_campaign(data, rulesets)
   }, 'campaign_view', 'campaign_template');
   $('#spinner-load').hide();
   $('#spinner-update').hide();
-  $('#click-update').removeClass('disabled');
-  $('#click_update').on('click', on_click_update);
+  $('#update_campaign').removeClass('disabled');
+  $('#update_campaign').on('click', on_click_update);
 }
 
 function on_click_update(event)
@@ -70,7 +70,7 @@ function on_click_update(event)
   // Prevent link from firing up
   event.preventDefault();
 
-  $('#click-update').addClass('disabled');
+  $('#update_campaign').addClass('disabled');
   $('#spinner-update').show();
   // TODO: if the ruleset has not changed, do not update
   var ruleset_ids = $('#Campaign_Rulesets').val() || [];
@@ -102,9 +102,9 @@ function on_click_update(event)
   console.log("Updating Campaign %s", campaign.id);
   campaign.ruleSets = new_rulesets;
   console.dir(campaign);
-  outbound_api.postCampaign(campaign.id, campaign)
+  outbound_api.putCampaign(campaign.id, campaign)
     .done(function(){
-      $('#click-update').removeClass('disabled');
+      $('#update_campaign').removeClass('disabled');
       $('#spinner-update').hide();
       console.log("Successfully updated Campaign %s", campaign.id);
     })
@@ -157,7 +157,7 @@ function on_click_update(event)
   <div class="form-group">
     <div class="col-md-offset-2 col-md10">
       <!-- <input type="submit" value="Update" class="btn btn-default on_click_update"/> -->
-      <a  id="click-update" href="#" class="btn btn-primary disabled">Update!</a>
+      <a  id="update_campaign" href="#" class="btn btn-primary disabled">Update!</a>
       &nbsp;<i id="spinner-update" class="fa fa-refresh fa-spin" style="font-size:24px"></i>
     </div>
   </div>
