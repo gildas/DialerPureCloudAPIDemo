@@ -23,6 +23,7 @@ function view_contactlist(data)
   contactlist = data;
 
   render_template(contactlist, 'contactlist_view', 'contactlist_template');
+  $('#update_contacts_progress').hide();
   $('#export_contacts').on('click', on_click_export_contacts);
   $('#update_contacts').on('click', on_click_update_contacts);
 }
@@ -49,8 +50,44 @@ function on_click_update_contacts(event)
   // Prevent link from firing up
   event.preventDefault();
 
-  console.log("Search: [%s] == '%s'", $('#update_contacts_SearchColumnName').val(), $('#update_contacts_SearchColumnValue').val());
-  console.log("Change: [%s] == '%s'", $('#update_contacts_ChangeColumnName').val(), $('#update_contacts_ChangeColumnValue').val());
+  console.dir(event);
+  var column_search_name  = $('#update_contacts_SearchColumnName').val();
+  var column_search_value = $('#update_contacts_SearchColumnValue').val();
+  var column_update_name  = $('#update_contacts_ChangeColumnName').val();
+  var column_update_value = $('#update_contacts_ChangeColumnValue').val();
+
+  console.log("Search: [%s] == '%s'", column_search_name, column_search_value);
+  console.log("Change: [%s] == '%s'", column_update_name, column_update_value);
+
+  $('#update_contacts_updated_count').html(function(id,value) { return 0; });
+  $('#update_contacts_progress').show(500);
+  max_tries = 5;
+  for (contact_id=1; contact_id <= contactlist.size; contact_id++)
+  {
+    //outbound_api.getContactlistContact(contactlist.id, contact_id)
+    RestRequest('GET', '/outbound/contactlists/' + contactlist.id + '/contacts/' + contact_id, 5, 5000)
+      .done(function(data) {
+        var contact_search_value = data.data[column_search_name];
+        console.log ("Checking contact %s => %s: %s == %s?", data.id, column_search_name, column_search_value, contact_search_value);
+        if (data.data[column_search_name] == column_search_value)
+        {
+          console.log("Match (%s)!", column_update_value);
+          data.data[column_update_name] = column_update_value;
+          //outbound_api.putContactlistContact(data.contactListId, data.id, data)
+          RestRequest('PUT', '/outbound/contactlists/' + contactlist.id + '/contacts/' + data.id, 5, 5000, data)
+            .done(function(data){
+              console.log("Success!");
+              console.dir(data);
+              $('#update_contacts_updated_count').html(function(id,value) { return +value+1; });
+            })
+            .fail(function(error){ console.error(error); });
+        }
+      })
+      .fail(function(jqXHR, status){
+        console.error("Error %s to fetch contact %s", status, contact_id);
+        console.dir(jqXHR);
+      });
+  }
 }
 </script>
 
@@ -88,6 +125,10 @@ function on_click_update_contacts(event)
       to
       <input id="update_contacts_SearchColumnValue" type="text"/>
       <a id="update_contacts" class="btn btn-default" href="#" rel='{{id}}'>Update!</a>
+      <div id="update_contacts_progress">
+        <br/>
+        <p>Updated <span id="update_contacts_updated_count" class="badge">0</span>/<span class="badge">{{size}}</span> contacts.</p>
+      </div>
   </li>
 </ul>
 </script>
