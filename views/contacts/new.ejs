@@ -76,7 +76,7 @@ function on_click_create(event)
     console.log("Successfuly added!");
     $('#spinner-create').hide();
     $('#create_contact').removeClass('disabled');
-    window.location.href = contactlist.selfUri;
+    window.location.href = '/ContactLists/' + contactlist.id;
     })
     .fail(function(error){ console.error(error); });
 }
