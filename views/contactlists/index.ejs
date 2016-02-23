@@ -34,7 +34,7 @@ function view_contactlists(data)
 </script>
 
 <script id="contactlists_template" type="text/template">
-<h3>Contact Lists</h3>
+<h3>Contact Lists <span class="badge">{{total}}</span></h3>
 <table class="table">
   {{#entities}}
   <tr><td><a href="/contactlists/{{id}}" >{{name}}</a></td></tr>
