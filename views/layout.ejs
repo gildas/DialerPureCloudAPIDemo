@@ -126,7 +126,10 @@
               <div class="col-sm-4">
                 <div class="pull-right">
                    <div class="foot-header">
-                    <a href="https://github.com/gildas/DialerPureCloudAPIDemo/tree/<%= git_commit %>"><%= git_commit %>@<%= git_branch %></a>
+                     v. <a href="https://github.com/gildas/DialerPureCloudAPIDemo/tree/<%= app_version %>"><%= app_version %></a>
+                     <% if (git_commit) { -%>
+                     | <a href="https://github.com/gildas/DialerPureCloudAPIDemo/tree/<%= git_commit %>"><%= git_commit %>@<%= git_branch %></a>
+                     <% } -%>
                   </div>
                 </div>
               </div>

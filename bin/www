@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 
+var package_info = require('../package.json');
 var fs = require('fs');
 var config = require('nconf');
 var app = require('../app');
@@ -40,6 +41,7 @@ config.argv({
   }
 });
 
+console.log("Version: %s", package_info.version);
 gitrev.short(function(value)  { console.log('Git commit: ' + value); });
 gitrev.branch(function(value) { console.log('Git branch: ' + value); });
 gitrev.tag(function(value)    { console.log('Git tag: '    + value); });

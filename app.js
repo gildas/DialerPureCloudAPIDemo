@@ -1,3 +1,4 @@
+var package_info=require('./package.json');
 var express = require('express');
 var engine = require('ejs-locals');
 var path = require('path');
@@ -50,6 +51,7 @@ app.use(function(req, res, next) {
   res.locals.current_user = req.session.user;
   res.locals.git_commit   = git_commit;
   res.locals.git_branch   = git_branch;
+  res.locals.app_version  = package_info.version;
   next();
 });
 
