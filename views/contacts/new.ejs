@@ -37,6 +37,10 @@ function view_contact(data)
   console.dir(blob);
   render_template(blob, 'contact_view', 'contact_template');
   $('a.on_click_create').on('click', on_click_create);
+  $('#spinner-load').hide();
+  $('#spinner-create').hide();
+  $('#create_contact').removeClass('disabled');
+  $('#create_contact').on('click', on_click_create);
 }
 
 function on_click_create(event)
@@ -45,6 +49,9 @@ function on_click_create(event)
 
   // Prevent link from firing up
   event.preventDefault();
+
+  $('#create_contact').addClass('disabled');
+  $('#spinner-create').show();
 
   console.log("Building new Contact");
   var contact = {
@@ -67,6 +74,8 @@ function on_click_create(event)
   outbound_api.postContactlistContacts(contactlist.id, [ contact ], priority)
     .done(function(){
     console.log("Successfuly added!");
+    $('#spinner-create').hide();
+    $('#create_contact').removeClass('disabled');
     window.location.href = contactlist.selfUri;
     })
     .fail(function(error){ console.error(error); });
@@ -90,14 +99,15 @@ function on_click_create(event)
   <div class="form-group">
     <div class="col-md-offset-2 col-md10">
       <!-- <input type="submit" value="Create" class="btn btn-default on_click_create"/> -->
-      <a  href="#" class="btn btn-primary on_click_create">Create!</a>
+      <a  id="create_contact" href="#" class="btn btn-primary disabled">Create!</a>
+      &nbsp;<i id="spinner-create" class="fa fa-refresh fa-spin" style="font-size:24px"></i>
     </div>
   </div>
 </div>
 
 </script>
 
-<h2>Details</h2>
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
 <div id="contact_view"></div>
 
