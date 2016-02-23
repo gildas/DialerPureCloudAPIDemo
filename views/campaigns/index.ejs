@@ -119,7 +119,7 @@ function on_click_schedule_call(event)
   <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
   <tr><td>Rule Sets   </td><td>{{#ruleSets}}{{name}},&nbsp;{{/ruleSets}}</td></tr>
 </table>
-<a id="edit_campaign" class="btn btn-default" href="/campaigns/{{id}}/edit">Edit &raquo;</a>
+<a id="edit_campaign" class="btn btn-default" href="/campaigns/{{id}}/edit" alt="Edit" data-toggle="tooltip" title="Edit"><span class='glyphicon glyphicon-edit'></span> &raquo;</a>
 <a id="schedule_call" class="btn btn-default" href="#" rel="{{id}}">Schedule</a> calls for tomorrow at 10AM.
 </script>
 

@@ -93,12 +93,12 @@
           </ul>
           <% if (token) { %>
           <ul class="nav navbar-nav navbar-right">
-            <li><p class="navbar-text">Hello <a href="/users/me" class="navbar-link"><%= current_user.displayName %></a>!</p></li>
-            <li><a href="javascript:logout()"i class="navbar-link">Log off</a></li>
+            <li><p class="navbar-text"><a href="/users/me" class="navbar-link"><%= current_user.displayName %>&nbsp;<span class="glyphicon glyphicon-user"></span></a></p></li>
+            <li><a href="javascript:logout()"i class="navbar-link"><span class="glyphicon glyphicon-log-out"></span> Log off</a></li>
           </ul>
           <% } else { %>
           <ul class="nav navbar-nav navbar-right">
-            <li><a href="javascript:login()" class="btn btn-primary btn-lg active">Login</a></li>
+            <li><a href="javascript:login()" class="btn btn-primary btn-lg active"><span class="glyphicon glyphicon-log-in"</span> Login</a></li>
           </ul>
           <% } %>
         </div>
