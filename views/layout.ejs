@@ -15,6 +15,8 @@
     <script src="/bower_components/mustache.js/mustache.min.js"></script>
     <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
     <script language='javascript'>
+      "use strict";
+
       //var purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
       var purecloud_session = new PureCloudSession();
 
@@ -60,36 +62,43 @@
         $('#' + target_id).html(Mustache.to_html($('#' + template_id).html(), data));
       }
 
-      function StateButton_initialize(button_id, on_click_callback)
-      {
-        $('#'+ button_id + ' #spinner').hide();
-        $('#'+ button_id).attr('data-initial-text', $('#'+ button_id + ' #text').text());
-        $('#'+ button_id).on('click', on_click_schedule_call);
-      }
+      class StateButton {
+        constructor(button_id, on_click_callback)
+        {
+          this.id             = button_id;
+          this.click_callback = on_click_callback;
+        }
 
-      function StateButton_processing(button_id)
-      {
-        $('#'+ button_id).addClass('disabled');
-        $('#'+ button_id + ' #text').fadeOut(function(){
-          $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processing-text')).fadeIn(function(){
-            $('#'+ button_id + ' #spinner').show();
-          });
-        });
-      }
+        initialize() {
+          $('#'+ this.id + ' #spinner').hide();
+          $('#'+ this.id).attr('data-initial-text', $('#'+ this.id + ' #text').text());
+          $('#'+ this.id).on('click', this.click_callback);
+        }
 
-      function StateButton_processed(button_id)
-      {
-        $('#'+ button_id + ' #spinner').hide();
-        $('#'+ button_id + ' #text').fadeOut(function(){
-          $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn();
-        });
-        setTimeout(function(){
+        processing() {
+          var button_id = this.id;
+          $('#'+ button_id).addClass('disabled');
           $('#'+ button_id + ' #text').fadeOut(function(){
-            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-initial-text')).fadeIn(function(){
-              $('#'+ button_id).removeClass('disabled');
+            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processing-text')).fadeIn(function(){
+              $('#'+ button_id + ' #spinner').show();
             });
           });
-        }, 2000);
+        }
+
+        processed() {
+          var button_id = this.id;
+          $('#'+ button_id + ' #spinner').hide();
+          $('#'+ button_id + ' #text').fadeOut(function(){
+            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn();
+          });
+          setTimeout(function(){
+            $('#'+ button_id + ' #text').fadeOut(function(){
+              $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-initial-text')).fadeIn(function(){
+                $('#'+ button_id).removeClass('disabled');
+              });
+            });
+          }, 2000);
+        }
       }
 
       function RestRequest(method, path, max_tries, timeout, body)
