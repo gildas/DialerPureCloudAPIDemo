@@ -23,7 +23,9 @@ function view_contactlist(data)
   contactlist = data;
 
   render_template(contactlist, 'contactlist_view', 'contactlist_template');
+  $('#spinner-load').hide();
   $('#update_contacts_progress').hide();
+  $('#update_contacts').removeClass('disabled');
   $('#export_contacts').on('click', on_click_export_contacts);
   $('#update_contacts').on('click', on_click_update_contacts);
 }
@@ -49,6 +51,8 @@ function on_click_update_contacts(event)
 
   // Prevent link from firing up
   event.preventDefault();
+
+  $('#update_contacts').addClass('disabled');
 
   console.dir(event);
   var column_search_name  = $('#update_contacts_SearchColumnName').val();
@@ -81,6 +85,11 @@ function on_click_update_contacts(event)
               $('#update_contacts_updated_count').html(function(id,value) { return +value+1; });
             })
             .fail(function(error){ console.error(error); });
+        }
+        $('#update_contacts_processed_count').html(function(id,value) { return +value+1; });
+        console.log("processed: " + Number($('#update_contacts_processed_count').html()) + " / " + contactlist.size);
+        if (Number($('#update_contacts_processed_count').html()) == contactlist.size) {
+          $('#update_contacts').removeClass('disabled');
         }
       })
       .fail(function(jqXHR, status){
@@ -124,16 +133,17 @@ function on_click_update_contacts(event)
       </select>
       to
       <input id="update_contacts_SearchColumnValue" type="text"/>
-      <a id="update_contacts" class="btn btn-default" href="#" rel='{{id}}'>Update!</a>
+      <a id="update_contacts" class="btn btn-default disabled" href="#" rel='{{id}}'>Update!</a>
       <div id="update_contacts_progress">
         <br/>
-        <p>Updated <span id="update_contacts_updated_count" class="badge">0</span>/<span class="badge">{{size}}</span> contacts.</p>
+        <p>Processed <span id="update_contacts_processed_count" class="badge">0</span> and Updated <span id="update_contacts_updated_count" class="badge">0</span>/<span class="badge">{{size}}</span> contacts.
+        </p>
       </div>
   </li>
 </ul>
 </script>
 
-<h2>Details</h2>
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
 <div id="contactlist_view"></div>
 

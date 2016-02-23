@@ -32,6 +32,7 @@ function view_skills(data)
   console.dir(data);
   skills = data;
   render_template(data, 'skills_view', 'skills_template');
+  $('#spinner-load').hide();
 }
 </script>
 
@@ -48,7 +49,7 @@ function view_skills(data)
 <button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
 </script>
 
-<h2>Index</h2>
+<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
 <div class="row">
   <div id="skills_view" class="col-md-4"></div>

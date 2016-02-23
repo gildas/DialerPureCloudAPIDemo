@@ -42,6 +42,7 @@ function view_contact(data)
 
   console.dir(blob);
   render_template(blob, 'contact_view', 'contact_template');
+  $('#spinner-load').hide();
 }
 </script>
 
@@ -56,7 +57,7 @@ function view_contact(data)
 
 </script>
 
-<h2>Details</h2>
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
 <div id="contact_view"></div>
 
