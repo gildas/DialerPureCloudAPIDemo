@@ -1,6 +1,5 @@
 <% layout('../layout') -%>
 
-<script src="/bower_components/jQuery.ajaxRetry/src/jQuery.ajaxRetry.js"></script>
 <script>
 var outbound_api = new OutboundApi(purecloud_session);
 var contactlist  = null;
@@ -47,22 +46,26 @@ function view_contact(data)
 
   contacts[data.id] = data;
   $('#contact_view_' + data.id)
-    .append($('<td>').text(data.data.Email))
     .append($('<td>')
       .append($('<a>')
         .attr('href', '/Contacts/' + data.id + '/?contactlist_id=' + data.contactListId)
-        .text('view')
+        .text(data.data.Email)
       )
-      .append(' | ')
+    )
+    .append($('<td>')
       .append($('<a>')
         .attr('href', '/Contacts/' + data.id + '/edit?contactlist_id=' + data.contactListId)
-        .text('edit')
+        .append($('<span>')
+          .attr('class', 'glyphicon glyphicon-edit')
+        )
       )
       .append(' | ')
       .append($('<a>')
         .attr('id', 'contact_delete_' + data.id)
         .attr('href', '#')
-        .text('delete')
+        .append($('<span>')
+          .attr('class', 'glyphicon glyphicon-trash')
+        )
       )
     );
   $('#contact_delete_' + data.id).on('click', null, data.id, on_click_delete);
