@@ -89,19 +89,10 @@ function on_click_delete(event)
 <h4><span class="badge">{{size}}</span> Contacts in ContactList {{name}}</h4>
 <table class="table">
   <thead>
-  <tr><th>id</th><th>Email</th><th&nbsp;</th>
+  <tr><th>id</th><th>Email</th><th>&nbsp;</th>
   </thead>
   <tbody></tbody>
 </table>
-</div>
-
-<script id="contact_template" type="text/template">
-  <td>{{id}}</td>
-  <td>{{data.email}}</td>
-  <td><a href="/Contacts/{{id}}/edit?contactlist_id={{contactListId}}">edit</a></td>
-  <td>delete</td>
-      <!-- <input type="submit" value="Create" class="btn btn-default on_click_create"/> -->
-      <!-- <a  href="#" class="btn btn-primary on_click_create">Create!</a> -->
 </div>
 
 </script>

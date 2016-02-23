@@ -4,6 +4,7 @@
 var outbound_api = new OutboundApi(purecloud_session);
 var campaign = null;
 var rulesets = null;
+var update_campaign = new StateButton('update_campaign', on_click_update_campaign);
 
 if (rulesets == null)
 {
@@ -58,20 +59,14 @@ function view_campaign(data, rulesets)
     selected: function() { return (campaign.ruleSets.indexOf(this.id) != -1) ? "selected" : ""; }
   }, 'campaign_view', 'campaign_template');
   $('#spinner-load').hide();
-  $('#spinner-update').hide();
-  $('#update_campaign').removeClass('disabled');
-  $('#update_campaign').on('click', on_click_update);
+  update_campaign.initialize();
 }
 
 function on_click_update(event)
 {
   console.log("Update Click Event!");
+  update_campaign.processing();
 
-  // Prevent link from firing up
-  event.preventDefault();
-
-  $('#update_campaign').addClass('disabled');
-  $('#spinner-update').show();
   // TODO: if the ruleset has not changed, do not update
   var ruleset_ids = $('#Campaign_Rulesets').val() || [];
 
@@ -104,8 +99,7 @@ function on_click_update(event)
   console.dir(campaign);
   outbound_api.putCampaign(campaign.id, campaign)
     .done(function(){
-      $('#update_campaign').removeClass('disabled');
-      $('#spinner-update').hide();
+      update_campaign.processed();
       console.log("Successfully updated Campaign %s", campaign.id);
     })
     .fail(function(error){ console.error(error); });
@@ -156,9 +150,9 @@ function on_click_update(event)
 
   <div class="form-group">
     <div class="col-md-offset-2 col-md10">
-      <!-- <input type="submit" value="Update" class="btn btn-default on_click_update"/> -->
-      <a  id="update_campaign" href="#" class="btn btn-primary disabled">Update!</a>
-      &nbsp;<i id="spinner-update" class="fa fa-refresh fa-spin" style="font-size:24px"></i>
+      <button id="update_campaign" class="btn btn-default" rel="{{id}}" data-processing-text="Updating..." data-processed-text="Updated">
+        <span id="text">Update</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
     </div>
   </div>
 </div>

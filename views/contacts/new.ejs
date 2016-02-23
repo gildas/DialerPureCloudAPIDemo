@@ -3,6 +3,7 @@
 <script>
 var outbound_api = new OutboundApi(purecloud_session);
 var contactlist  = null;
+var create_contact   = new StateButton('create_contact', on_click_create_contact);
 
 if (contactlist == null)
 {
@@ -36,22 +37,14 @@ function view_contact(data)
   };
   console.dir(blob);
   render_template(blob, 'contact_view', 'contact_template');
-  $('a.on_click_create').on('click', on_click_create);
+  create_contact.initialize();
   $('#spinner-load').hide();
-  $('#spinner-create').hide();
-  $('#create_contact').removeClass('disabled');
-  $('#create_contact').on('click', on_click_create);
 }
 
-function on_click_create(event)
+function on_click_create_contact(event)
 {
   console.log("Create Click Event!");
-
-  // Prevent link from firing up
-  event.preventDefault();
-
-  $('#create_contact').addClass('disabled');
-  $('#spinner-create').show();
+  create_contact.processing();
 
   console.log("Building new Contact");
   var contact = {
@@ -74,9 +67,8 @@ function on_click_create(event)
   outbound_api.postContactlistContacts(contactlist.id, [ contact ], priority)
     .done(function(){
     console.log("Successfuly added!");
-    $('#spinner-create').hide();
-    $('#create_contact').removeClass('disabled');
-    window.location.href = '/ContactLists/' + contactlist.id;
+    create_contact.processed();
+    setTimeout(function(){ window.location.href = '/ContactLists/' + contactlist.id; }, 1000);
     })
     .fail(function(error){ console.error(error); });
 }
@@ -98,9 +90,9 @@ function on_click_create(event)
 
   <div class="form-group">
     <div class="col-md-offset-2 col-md10">
-      <!-- <input type="submit" value="Create" class="btn btn-default on_click_create"/> -->
-      <a  id="create_contact" href="#" class="btn btn-primary disabled">Create!</a>
-      &nbsp;<i id="spinner-create" class="fa fa-refresh fa-spin" style="font-size:24px"></i>
+      <button id="create_contact" class="btn btn-default" rel="{{id}}" data-processing-text="Creating..." data-processed-text="Created">
+        <span id="text">Create</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
     </div>
   </div>
 </div>

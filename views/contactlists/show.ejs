@@ -3,6 +3,9 @@
 <script>
 var outbound_api = new OutboundApi(purecloud_session);
 var contactlist  = null;
+var update_contacts   = new StateButton('update_contacts', on_click_update_contacts);
+var export_contacts   = new StateButton('export_contacts', on_click_export_contacts);
+var download_contacts = new StateButton('download_contacts', on_click_download_contacts);
 
 if (contactlist == null)
 {
@@ -26,29 +29,17 @@ function view_contactlist(data)
   $('#spinner-load').hide();
 
   $('#update_contacts_progress').hide();
-  $('#update_contacts').removeClass('disabled');
-  $('#update_contacts').on('click', on_click_update_contacts);
+  update_contacts.initialize();
 
-  $('#export_contacts_process').show();
-  $('#spinner-export').hide();
-  $('#export_contacts').removeClass('disabled');
-  $('#export_contacts').on('click', on_click_export_contacts);
+  export_contacts.initialize();
   $('#download_contacts_process').hide();
-  $('#download_contacts').on('click', on_click_download_contacts);
-
-  $('#spinner-download').hide();
-  $('#download_contacts').removeClass('disabled');
+  download_contacts.initialize();
 }
 
 function on_click_export_contacts(event)
 {
   console.log("Export Click Event!");
-
-  // Prevent link from firing up
-  event.preventDefault();
-
-  $('#spinner-export').show();
-  $('#export_contacts').addClass('disabled');
+  export_contacts.processing();
 
   outbound_api.postContactlistExport($(this).attr('rel'))
     .done(function(data){
@@ -63,6 +54,7 @@ function check_export_contacts(data)
 {
   console.log("NEED TO ADD CODE HERE!!!");
   setTimeout(function() {
+    export_contacts.processed();
     $('#spinner-export').hide();
     $('#export_contacts').removeClass('disabled');
   }, 1000);
@@ -79,6 +71,7 @@ function on_click_download_contacts(event)
 function on_click_update_contacts(event)
 {
   console.log("Update Click Event!");
+  update_contacts.processing();
 
   // Prevent link from firing up
   event.preventDefault();
@@ -120,7 +113,7 @@ function on_click_update_contacts(event)
         $('#update_contacts_processed_count').html(function(id,value) { return +value+1; });
         console.log("processed: " + Number($('#update_contacts_processed_count').html()) + " / " + contactlist.size);
         if (Number($('#update_contacts_processed_count').html()) == contactlist.size) {
-          $('#update_contacts').removeClass('disabled');
+          update_contacts.processed();
         }
       })
       .fail(function(jqXHR, status){
@@ -146,10 +139,16 @@ function on_click_update_contacts(event)
   <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
   <li>
     <div id="export_contacts_process">
-      <a id="export_contacts" class="btn btn-primary disabled" href="#" rel="{{id}}">Export&nbsp;<i id="spinner-export" class="fa fa-refresh fa-spin" style="font-size:24px"></i></a> all contacts
+      <button id="export_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Exporting..." data-processed-text="Exported">
+        <span id="text">Export</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
+      all contacts
     </div>
     <div id="download_contacts_process">
-      <a id="download_contacts" class="btn btn-primary disabled" href="#" rel="{{id}}">Download&nbsp;<i id="spinner-download" class="fa fa-refresh fa-spin" style="font-size:24px"></i></a> all contacts
+      <button id="download_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Downloading..." data-processed-text="Downloaded">
+        <span id="text">Download</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
+      all contacts
     </div>
   </li>
   <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Import</a> many contacts</li>
@@ -171,7 +170,9 @@ function on_click_update_contacts(event)
       </select>
       to
       <input id="update_contacts_SearchColumnValue" type="text"/>
-      <a id="update_contacts" class="btn btn-default disabled" href="#" rel='{{id}}'>Update!</a>
+      <button id="update_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Updating..." data-processed-text="Updated">
+        <span id="text">Update</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
       <div id="update_contacts_progress">
         <br/>
         <p>Processed <span id="update_contacts_processed_count" class="badge">0</span> and Updated <span id="update_contacts_updated_count" class="badge">0</span>/<span class="badge">{{size}}</span> contacts.
