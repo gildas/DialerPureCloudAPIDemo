@@ -24,10 +24,20 @@ function view_contactlist(data)
 
   render_template(contactlist, 'contactlist_view', 'contactlist_template');
   $('#spinner-load').hide();
+
   $('#update_contacts_progress').hide();
   $('#update_contacts').removeClass('disabled');
-  $('#export_contacts').on('click', on_click_export_contacts);
   $('#update_contacts').on('click', on_click_update_contacts);
+
+  $('#export_contacts_process').show();
+  $('#spinner-export').hide();
+  $('#export_contacts').removeClass('disabled');
+  $('#export_contacts').on('click', on_click_export_contacts);
+  $('#download_contacts_process').hide();
+  $('#download_contacts').on('click', on_click_download_contacts);
+
+  $('#spinner-download').hide();
+  $('#download_contacts').removeClass('disabled');
 }
 
 function on_click_export_contacts(event)
@@ -37,12 +47,33 @@ function on_click_export_contacts(event)
   // Prevent link from firing up
   event.preventDefault();
 
+  $('#spinner-export').show();
+  $('#export_contacts').addClass('disabled');
+
   outbound_api.postContactlistExport($(this).attr('rel'))
     .done(function(data){
       console.log("Exporting Contact List %s", data.id);
       console.dir(data);
+      check_export_contacts(data);
     })
     .fail(function(error){ console.error(error); });
+}
+
+function check_export_contacts(data)
+{
+  console.log("NEED TO ADD CODE HERE!!!");
+  setTimeout(function() {
+    $('#spinner-export').hide();
+    $('#export_contacts').removeClass('disabled');
+  }, 1000);
+}
+
+function on_click_download_contacts(event)
+{
+  console.log("Download Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
 }
 
 function on_click_update_contacts(event)
@@ -113,7 +144,14 @@ function on_click_update_contacts(event)
 <ul>
   <li><a href="/Contacts/?contactlist_id={{id}}">List</a> all contacts</li>
   <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
-  <li><a id="export_contacts" clas="link" href="#" rel="{{id}}">Export</a> all contacts</li>
+  <li>
+    <div id="export_contacts_process">
+      <a id="export_contacts" class="btn btn-primary disabled" href="#" rel="{{id}}">Export&nbsp;<i id="spinner-export" class="fa fa-refresh fa-spin" style="font-size:24px"></i></a> all contacts
+    </div>
+    <div id="download_contacts_process">
+      <a id="download_contacts" class="btn btn-primary disabled" href="#" rel="{{id}}">Download&nbsp;<i id="spinner-download" class="fa fa-refresh fa-spin" style="font-size:24px"></i></a> all contacts
+    </div>
+  </li>
   <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Import</a> many contacts</li>
   <!-- These are actually column modifications -->
   <li>
