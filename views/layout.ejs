@@ -60,6 +60,38 @@
         $('#' + target_id).html(Mustache.to_html($('#' + template_id).html(), data));
       }
 
+      function StateButton_initialize(button_id, on_click_callback)
+      {
+        $('#'+ button_id + ' #spinner').hide();
+        $('#'+ button_id).attr('data-initial-text', $('#'+ button_id + ' #text').text());
+        $('#'+ button_id).on('click', on_click_schedule_call);
+      }
+
+      function StateButton_processing(button_id)
+      {
+        $('#'+ button_id).addClass('disabled');
+        $('#'+ button_id + ' #text').fadeOut(function(){
+          $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processing-text')).fadeIn(function(){
+            $('#'+ button_id + ' #spinner').show();
+          });
+        });
+      }
+
+      function StateButton_processed(button_id)
+      {
+        $('#'+ button_id + ' #spinner').hide();
+        $('#'+ button_id + ' #text').fadeOut(function(){
+          $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn();
+        });
+        setTimeout(function(){
+          $('#'+ button_id + ' #text').fadeOut(function(){
+            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-initial-text')).fadeIn(function(){
+              $('#'+ button_id).removeClass('disabled');
+            });
+          });
+        }, 2000);
+      }
+
       function RestRequest(method, path, max_tries, timeout, body)
       {
         return $.ajax({
