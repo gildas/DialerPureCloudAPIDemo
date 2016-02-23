@@ -12,6 +12,7 @@ var routes        = require('./routes/index');
 var campaigns     = require('./routes/campaigns');
 var contactlists  = require('./routes/contactlists');
 var contacts      = require('./routes/contacts');
+var skills        = require('./routes/skills');
 
 var app = express();
 
@@ -57,6 +58,7 @@ app.use('/campaigns', campaigns);
 app.use('/contactlists', contactlists);
 app.use('/contact_lists', contactlists);
 app.use('/contacts', contacts);
+app.use('/skills', skills);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

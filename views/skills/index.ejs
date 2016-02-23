@@ -1,0 +1,55 @@
+<% layout('../layout') -%>
+
+<script>
+var routing_api  = new RoutingApi(purecloud_session);
+var outbound_api = new OutboundApi(purecloud_session);
+var skills = null;
+
+if (skills == null)
+{
+  routing_api.getSkills()
+    .done(view_skills)
+    .fail(function(error){ console.error(error); });
+}
+else
+{
+  view_skills(skills);
+}
+
+function next_page()
+{
+  purecloud_session.get(skills.nextUri).done(view_skills);
+}
+
+function previous_page()
+{
+  purecloud_session.get(skills.previousUri).done(view_skills);
+}
+
+function view_skills(data)
+{
+  console.log("Displaying %d Skills", data.total);
+  console.dir(data);
+  skills = data;
+  render_template(data, 'skills_view', 'skills_template');
+}
+</script>
+
+<script id="skills_template" type="text/template">
+<h3>Skills <span class="badge">{{total}}</span></h3>
+<table class="table">
+  <tr><th>Skill Name</th></tr>
+  {{#entities}}
+  <!-- <tr><td><a href="/skills/{{id}}" >{{name}}</a></td></tr> -->
+  <tr><td>{{name}}</td></tr>
+  {{/entities}}
+</table>
+<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
+<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<h2>Index</h2>
+
+<div class="row">
+  <div id="skills_view" class="col-md-4"></div>
+</div>
