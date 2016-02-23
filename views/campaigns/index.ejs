@@ -3,6 +3,7 @@
 <script>
 var outbound_api = new OutboundApi(purecloud_session);
 var campaigns = null;
+var schedule_call = new StateButton('schedule_call', on_click_schedule_call);
 
 if (campaigns == null)
 {
@@ -52,20 +53,13 @@ function view_campaign(id)
 
   console.log("pos=" + pos);
   render_template(campaigns.entities[pos], 'campaign_view', 'campaign_template');
-  $('#spinner-schedule').hide();
-  $('#schedule_call').removeClass('disabled');
-  $('#schedule_call').on('click', on_click_schedule_call);
+  schedule_call.initialize();
 }
 
 function on_click_schedule_call(event)
 {
   console.log("ScheduleCall Click Event!");
-
-  // Prevent link from firing up
-  event.preventDefault();
-
-  $('#schedule_call').addClass('disabled');
-  $('#spinner-schedule').show();
+  schedule_call.processing();
 
   var campaign_id = $(this).attr('rel');
   var pos         = campaigns.entities.map(function(element) { return element.id; }).indexOf(campaign_id);
@@ -94,10 +88,9 @@ function on_click_schedule_call(event)
       });
       outbound_api.putSchedulesCampaign(campaign_id, data)
         .done(function(data){
+          schedule_call.processed();
           console.log("scheduled!")
           console.dir(data);
-          $('#schedule_call').removeClass('disabled');
-          $('#spinner-schedule').hide();
         })
         .fail(function(error){ console.error(error); });
     })
@@ -127,9 +120,17 @@ function on_click_schedule_call(event)
   <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
   <tr><td>Rule Sets   </td><td>{{#ruleSets}}{{name}},&nbsp;{{/ruleSets}}</td></tr>
 </table>
+<div class="row">
+  <div class="col-md-2">
 <a id="edit_campaign" class="btn btn-default" href="/campaigns/{{id}}/edit" alt="Edit" data-toggle="tooltip" title="Edit"><span class='glyphicon glyphicon-edit'></span> &raquo;</a>
-<a id="schedule_call" class="btn btn-default disabled" href="#" rel="{{id}}">Schedule</a> calls for tomorrow at 10AM.
-&nbsp;<i id="spinner-schedule" class="fa fa-refresh fa-spin" style="font-size:24px"></i>
+  </div>
+  <div class="col-md-8">
+    <button id="schedule_call" class="btn btn-default" rel="{{id}}" data-processing-text="Scheduling..." data-processed-text="Scheduled">
+      <span id="text">Schedule</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+    </button>
+    <br/>calls for tomorrow at 10AM
+  </div>
+</div>
 </script>
 
 <h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
