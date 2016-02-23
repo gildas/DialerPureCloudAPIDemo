@@ -1,8 +1,11 @@
 <% layout('../layout') -%>
 
 <script>
-var outbound_api = new OutboundApi(purecloud_session);
-var contactlist  = null;
+var outbound_api      = new OutboundApi(purecloud_session);
+var notifications_api = new NotificationsApi(purecloud_session);
+var contactlist       = null;
+var channels          = null;
+var subscriptions     = null;
 var update_contacts   = new StateButton('update_contacts', on_click_update_contacts);
 var export_contacts   = new StateButton('export_contacts', on_click_export_contacts);
 var download_contacts = new StateButton('download_contacts', on_click_download_contacts);
@@ -17,6 +20,31 @@ if (contactlist == null)
 else
 {
   view_contactlist(contactlist);
+}
+
+if (channels == null)
+{
+  console.log('Loading Channels');
+  notifications_api.getChannels()
+    .done(function(data){
+      channels = data;
+      console.log("received Notification channels");
+      console.dir(data);
+    })
+    .fail(function(error){ console.error(error); });
+}
+
+if (subscriptions == null)
+{
+  var channel_id = 'ed2p73crsl34agnglg9ubv5lp5';
+  console.log("Loading Subscriptions for Channel %s", channel_id);
+ notifications_api.getChannelSubscriptions(channel_id)
+    .done(function(data){
+      channels = data;
+      console.log("received Subscriptions for channel %s", channel_id);
+      console.dir(data);
+    })
+    .fail(function(error){ console.error(error); });
 }
 
 function view_contactlist(data)
@@ -45,6 +73,7 @@ function on_click_export_contacts(event)
     .done(function(data){
       console.log("Exporting Contact List %s", data.id);
       console.dir(data);
+      //https://apps.mypurecloud.com.au/platform/api/v1/notifications/channels/ed2p73crsl34agnglg9ubv5lp5/subscriptions
       check_export_contacts(data);
     })
     .fail(function(error){ console.error(error); });
