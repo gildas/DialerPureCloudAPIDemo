@@ -99,6 +99,14 @@ function on_click_import_contacts(event)
   form_data.append('id', contactlist.id);
   form_data.append('contact-id-name', 'inin-outbound-id');
 
+  console.dir($('#import_contacts #file')[0].files[0]);
+  var reader = new FileReader();
+
+  reader.onload = function(e) {
+    var contents = e.target.result;
+    console.log(contents);
+  };
+  reader.readAsText($('#import_contacts #file')[0].files[0]);
   /* // Use the following to "debug" the actual HTTP request (check the network tab of the browser debugger)
   $.ajax({
     method: 'POST',
@@ -110,6 +118,29 @@ function on_click_import_contacts(event)
   });
   */
 
+  // we cannot use jQuery as Chrome will preflight the request (OPTIONS) to look for for CORS
+  // Actually, it comes from Chrome and Safari, XMLHttpRequest will issue the same thing.
+
+  var xhr = new XMLHttpRequest();
+
+  xhr.open('POST', 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/uploads/contactlist');
+  xhr.setRequestHeader('Authorization', 'bearer <%= token %>');
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) { // DONE
+      if (xhr.status === 200) { // OK
+        console.log("Response: %s", xhr.responseText);
+      } else {
+        console.error('Error: ' + xhr.status);
+        console.dir(xhr);
+        show_error("Error " + xhr.status + " while importing: ");
+      }
+    }
+    import_submit.processed();
+  };
+
+  xhr.send(form_data);
+  /*
   $.ajax({
     method: 'POST',
     url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/uploads/contactlist',
@@ -133,6 +164,7 @@ function on_click_import_contacts(event)
     import_submit.processed();
   });
   ;
+  */
 }
 
 function on_click_export_contacts(event)
