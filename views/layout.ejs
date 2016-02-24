@@ -89,9 +89,10 @@
 
         processed() {
           var button_id = this.id;
-          $('#'+ button_id + ' #spinner').hide();
           $('#'+ button_id + ' #text').fadeOut(function(){
-            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn();
+            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn(function() {
+              $('#'+ button_id + ' #spinner').hide();
+            });
           });
           setTimeout(function(){
             $('#'+ button_id + ' #text').fadeOut(function(){
