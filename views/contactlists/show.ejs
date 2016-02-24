@@ -72,21 +72,57 @@ function on_click_export_contacts(event)
   outbound_api.postContactlistExport($(this).attr('rel'))
     .done(function(data){
       console.log("Exporting Contact List %s", data.id);
-      console.dir(data);
-      //https://apps.mypurecloud.com.au/platform/api/v1/notifications/channels/ed2p73crsl34agnglg9ubv5lp5/subscriptions
-      check_export_contacts(data);
+      // TODO: How do we find the channel id?
+      var channel_id = "ed2p73crsl34agnglg9ubv5lp5";
+      check_export_contacts(data.id, channel_id, 5000);
     })
     .fail(function(error){ console.error(error); });
 }
 
-function check_export_contacts(data)
+function check_export_contacts(contactlist_id, channel_id, interval)
 {
-  console.log("NEED TO ADD CODE HERE!!!");
-  setTimeout(function() {
-    export_contacts.processed();
-    $('#spinner-export').hide();
-    $('#export_contacts').removeClass('disabled');
-  }, 1000);
+  var topic = 'outbound.contactlists.' + contactlist_id + '.export';
+
+  console.log("Waiting for topic: %s to start", topic);
+  notifications_api.getChannelSubscriptions(channel_id)
+    .done(function(data, status, xhr){
+      var pos = data.entities.map(function(entity) { return entity.id; }).indexOf(topic);
+      if (pos != -1)
+      {
+        console.log("Found topic in pos #%d Export is happening!", pos);
+        waitfor_export_contacts(contactlist_id, channel_id, interval);
+        return;
+      }
+      console.log("There are %d entities in channel %s", data.total, channel_id);
+      console.dir(data);
+      setTimeout(function(){ check_export_contacts(contactlist_id, channel_id, interval); }, interval);
+    })
+    .fail(function(error){ console.error(error); });
+}
+
+function waitfor_export_contacts(contactlist_id, channel_id, interval)
+{
+  var topic = 'outbound.contactlists.' + contactlist_id + '.export';
+  console.log("Waiting for topic: %s to finish", topic);
+  notifications_api.getChannelSubscriptions(channel_id)
+    .done(function(data, status, xhr){
+      var pos = data.entities.map(function(entity) { return entity.id; }).indexOf(topic);
+      if (pos == -1)
+      {
+        console.log("Export is done!");
+        export_contacts.processed();
+        setTimeout(function(){
+          $('#export_contacts_process').hide();
+          $('#download_contacts_process').show();
+        }, 2000);
+        // https://public-api.ap-southeast-2.mypurecloud.com.au/api/v1/downloads/f38d5568
+        return;
+      }
+      console.log("There are %d entities in channel %s", data.total, channel_id);
+      console.dir(data);
+      setTimeout(function(){ waitfor_export_contacts(contactlist_id, channel_id, interval); }, interval);
+    })
+    .fail(function(error){ console.error(error); });
 }
 
 function on_click_download_contacts(event)
