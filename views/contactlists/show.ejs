@@ -64,7 +64,6 @@ function view_contactlist(data)
 
   export_contacts.initialize();
   $('#download_contacts_process').hide();
-  download_contacts.initialize();
 }
 
 function on_click_import_contacts(event)
@@ -73,65 +72,17 @@ function on_click_import_contacts(event)
 
   event.preventDefault();
   import_submit.processing();
+
   var form_data = new FormData($('#import_contacts'));
-  /*------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="file"; filename="PureCloud-ContactList-structure.csv"
-    Content-Type: text/csv
 
-
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="fileType"
-
-    contactlist
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="id"
-
-    58310346-2735-4456-9857-309dd5d90b36
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="contact-id-name"
-
-    inin-outbound-id
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah--
-  */
   form_data.append('file', $('#import_contacts #file')[0].files[0]); // Here we assume a file was selected...
   form_data.append('fileType', 'contactlist');
   form_data.append('id', contactlist.id);
   form_data.append('contact-id-name', 'inin-outbound-id');
 
-  console.dir($('#import_contacts #file')[0].files[0]);
-  var reader = new FileReader();
-
-  reader.onload = function(e) {
-    var contents = e.target.result;
-    console.log(contents);
-  };
-  reader.readAsText($('#import_contacts #file')[0].files[0]);
-
-  // we cannot use jQuery as Chrome will preflight the request (OPTIONS) to look for for CORS
-  // Actually, it comes from Chrome and Safari, XMLHttpRequest will issue the same thing.
-  var xhr = new XMLHttpRequest();
-
-  xhr.open('POST', 'https://apps.mypurecloud.<%= settings.purecloud_region %>/api/v1/uploads/contactlist');
-  xhr.setRequestHeader('Authorization', 'bearer <%= token %>');
-
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4) { // DONE
-      if (xhr.status === 200) { // OK
-        console.log("Response: %s", xhr.responseText);
-      } else {
-        console.error('Error: ' + xhr.status);
-        console.dir(xhr);
-        show_error("Error " + xhr.status + " while importing: ");
-      }
-    }
-    import_submit.processed();
-  };
-
-  xhr.send(form_data);
-  /*
   $.ajax({
     method: 'POST',
-    url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/uploads/contactlist',
+    url: 'https://apps.mypurecloud.<%= settings.purecloud_region %>/uploads/contactlist',
     beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
     processData: false,
     contentType: false,
@@ -151,8 +102,6 @@ function on_click_import_contacts(event)
     console.log("Wrapping up the buttons");
     import_submit.processed();
   });
-  ;
-  */
 }
 
 function on_click_export_contacts(event)
@@ -327,10 +276,14 @@ function on_click_update_contacts(event)
     </div>
   </li>
   <li>
-    <form id="import_contacts" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+    <form id="import_contacts" method="POST" enctype="multipart/form-data" action="https://apps.mypurecloud.<%= settings.purecloud_region %>/uploads/contactlist" class="form-inline" role="form">
       <div class="form-group">
         <label for="file">CSV File:</label>
-        <input id="file" type="file" class="form-control"  required />
+        <input id="file" name="file" type="file" class="form-control"  required />
+        <input name="fileType" type="hidden" value="contactlist"/>
+        <input name="id" type="hidden" value="{{id}}"/>
+        <input name="contact-id-name" type="hidden" value="inin-outbound-id"/>
+
         <button id="import_submit" type="submit" class="btn btn-default" rel="{{id}}" data-processing-text="Importing..." data-processed-text="Imported">
           <span id="text">Import</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
         </button>
