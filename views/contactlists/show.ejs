@@ -7,6 +7,7 @@ var contactlist       = null;
 var channels          = null;
 var subscriptions     = null;
 var update_contacts   = new StateButton('update_contacts', on_click_update_contacts);
+var import_submit     = new StateButton('import_submit');
 var export_contacts   = new StateButton('export_contacts', on_click_export_contacts);
 var download_contacts = new StateButton('download_contacts', on_click_download_contacts);
 
@@ -59,9 +60,79 @@ function view_contactlist(data)
   $('#update_contacts_progress').hide();
   update_contacts.initialize();
 
+  $('#import_contacts').submit(on_click_import_contacts);
+  import_submit.initialize();
+
   export_contacts.initialize();
   $('#download_contacts_process').hide();
   download_contacts.initialize();
+}
+
+function on_click_import_contacts(event)
+{
+  console.log("Import Click Event!");
+
+  event.preventDefault();
+  import_submit.processing();
+  var form_data = new FormData($('#import_contacts'));
+  /*------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
+    Content-Disposition: form-data; name="file"; filename="PureCloud-ContactList-structure.csv"
+    Content-Type: text/csv
+
+
+    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
+    Content-Disposition: form-data; name="fileType"
+
+    contactlist
+    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
+    Content-Disposition: form-data; name="id"
+
+    58310346-2735-4456-9857-309dd5d90b36
+    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
+    Content-Disposition: form-data; name="contact-id-name"
+
+    inin-outbound-id
+    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah--
+  */
+  form_data.append('file', $('#import_contacts #file')[0].files[0]); // Here we assume a file was selected...
+  form_data.append('fileType', 'contactlist');
+  form_data.append('id', contactlist.id);
+  form_data.append('contact-id-name', 'inin-outbound-id');
+
+  /* // Use the following to "debug" the actual HTTP request (check the network tab of the browser debugger)
+  $.ajax({
+    method: 'POST',
+    url: '/',
+    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
+    processData: false,
+    contentType: false,
+    data: form_data,
+  });
+  */
+
+  $.ajax({
+    method: 'POST',
+    url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/uploads/contactlist',
+    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
+    processData: false,
+    contentType: false,
+    timeout: 5000,
+    shouldRetry: 5,
+    data: form_data,
+  })
+  .done(function(data){
+    console.log("Import Success!");
+    console.dir(data);
+  })
+  .fail(function(error){
+    console.error(error);
+    show_error("Error " + error.status + " while importing: " + error.statusText);
+  })
+  .always(function(){
+    console.log("Wrapping up the buttons");
+    import_submit.processed();
+  });
+  ;
 }
 
 function on_click_export_contacts(event)
@@ -71,31 +142,87 @@ function on_click_export_contacts(event)
 
   outbound_api.postContactlistExport($(this).attr('rel'))
     .done(function(data){
+      var contactlist_id = data.id;
       console.log("Exporting Contact List %s", data.id);
-      // TODO: How do we find the channel id?
-      var channel_id = "ed2p73crsl34agnglg9ubv5lp5";
-      check_export_contacts(data.id, channel_id, 5000);
+
+      // Create a channel that will tell when the export is done
+      notifications_api.postChannels()
+        .done(function(data){
+          var channel_id = data.id;
+          console.log("Channel %s created", data.id);
+
+          var export_id = 'outbound.contactlists.' + contactlist_id + '.export';
+          var websocket = new WebSocket(data.connectUri);
+
+          console.log("WebSocket listening on %s", websocket.url);
+          websocket.onopen = function(){
+            notifications_api.postChannelSubscriptions(data.id, [{ id: export_id }]);
+          };
+
+          // when we get something, we can download
+          websocket.onmessage = function(message) {
+            console.log("Received message on WebSocket");
+            console.dir(message);
+            var data = JSON.parse(message.data);
+            console.log("Data topic: %s", data.topicName);
+            if (data.topicName == 'channel.metadata')
+            {
+              if (data.eventBody.message)
+              {
+                console.log("Event Message: \"%s\"", data.eventBody.message);
+                if (data.eventBody.message == 'WebSocket Heartbeat')
+                {
+                  console.log('Sending back OK');
+                  websocket.send('ok');
+                }
+              }
+              else
+              {
+                console.dir(data.eventBody);
+              }
+            }
+            else
+            {
+              console.dir(data);
+            }
+          };
+        })
+        .fail(function(error){ console.error(error); });
     })
     .fail(function(error){ console.error(error); });
 }
 
-function check_export_contacts(contactlist_id, channel_id, interval)
+function check_export_contacts(contactlist_id, channel_id, subscriptions, interval)
 {
   var topic = 'outbound.contactlists.' + contactlist_id + '.export';
 
-  console.log("Waiting for topic: %s to start", topic);
-  notifications_api.getChannelSubscriptions(channel_id)
+  console.log("Subscribing to topic: %s", topic);
+  subscriptions.unshift({ id: topic });
+  notifications_api.putChannelSubscriptions(channel_id, subscriptions)
     .done(function(data, status, xhr){
       var pos = data.entities.map(function(entity) { return entity.id; }).indexOf(topic);
       if (pos != -1)
       {
         console.log("Found topic in pos #%d Export is happening!", pos);
-        waitfor_export_contacts(contactlist_id, channel_id, interval);
+        setTimeout(function(){
+          subscriptions.shift();
+          notifications_api.putChannelSubscriptions(channel_id, subscriptions)
+            .done(function(data){
+              console.log("Export is done!");
+              export_contacts.processed();
+              setTimeout(function(){
+                $('#export_contacts_process').hide();
+                $('#download_contacts_process').show();
+              }, 2000);
+              // https://public-api.ap-southeast-2.mypurecloud.com.au/api/v1/downloads/f38d5568
+              return;
+            })
+            .fail(function(error){ console.error(error); });
+        }, interval);
         return;
       }
-      console.log("There are %d entities in channel %s", data.total, channel_id);
+      console.error("There are %d entities in channel %s", data.total, channel_id);
       console.dir(data);
-      setTimeout(function(){ check_export_contacts(contactlist_id, channel_id, interval); }, interval);
     })
     .fail(function(error){ console.error(error); });
 }
@@ -216,7 +343,17 @@ function on_click_update_contacts(event)
       all contacts
     </div>
   </li>
-  <li><a href="/ContactLists/{{id}}/Contacts/new/Upload">Import</a> many contacts</li>
+  <li>
+    <form id="import_contacts" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
+      <div class="form-group">
+        <label for="file">CSV File:</label>
+        <input id="file" type="file" class="form-control"  required />
+        <button id="import_submit" type="submit" class="btn btn-default" rel="{{id}}" data-processing-text="Importing..." data-processed-text="Imported">
+          <span id="text">Import</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+        </button>
+      </div>
+    </form>
+  </li>
   <!-- These are actually column modifications -->
   <li>
     Change Column

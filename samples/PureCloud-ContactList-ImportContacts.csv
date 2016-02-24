@@ -1,0 +1,4 @@
+inin-outbound-id,Enquiry id token,Enquiry owner,Region,Enquiry record type,Form Type,Priority rating,Enquiry status,Enquiry URL,Title,Name,Leaner Unique ID,Gender,DOB,Questions/Comments,Phone,Mobile,Email,Brochure requested,Study country.,How did you hear about us?,CallRecordLastAttempt-Phone,CallRecordLastResult-Phone
+2,2,Luke Skywalker,QLD,Online,,,Open,,,Ray,,F,,,429341550,,ray@gmail.com,Y,Australia,,2015-08-26T05:44:48.811Z,ININ-OUTBOUND-FAILED-TO-REACH-AGENT
+3,3,Obi-wan Kenobi,VIC,Online,,,Open,,,Davis,,F,,,429341563,,Betty.davis@gmail.com,Y,Australia,,2015-08-26T05:45:23.151Z,ININ-OUTBOUND-FAILED-TO-REACH-AGENT
+4,4,Darth Vador,NSW,Online,,,Open,,,Drinkwater,,F,,,429341516,,Margret.drinkwater@gmail.com,Y,Australia,,2016-01-29T11:37:39.203Z,ININ-OUTBOUND-PREVIEW-SKIPPED
