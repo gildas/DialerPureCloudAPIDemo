@@ -109,90 +109,94 @@ function on_click_export_contacts(event)
   console.log("Export Click Event!");
   export_contacts.processing();
 
-  var contactlist_id = $(this).attr('rel');
-  var export_id      = 'outbound.contactlists.' + contactlist_id + '.export';
+  var contactlist_id  = $(this).attr('rel');
+  var export_topic_id = 'outbound.contactlists.' + contactlist_id + '.export'; // This is the Topic id we will subscribe to
 
+  // Create a new channel to keep the subscriptions
   notifications_api.postChannels()
-  .done(function(data){
-    var channel_id = data.id;
-    console.log("Channel %s created", channel_id);
-    console.dir(data);
+    .done(function(channel_data){
+      console.log("Channel %s created", channel_data.id);
+      console.dir(channel_data);
 
-    var websocket = new WebSocket(data.connectUri);
+      var websocket = new WebSocket(channel_data.connectUri);
 
-    console.log("WebSocket listening on %s", websocket.url);
-    websocket.onopen = function(){
-      notifications_api.postChannelSubscriptions(data.id, [{ id: export_id }])
-        .done(function(data){
-          outbound_api.postContactlistExport(contactlist_id)
-            .done(function(data){
-              console.log("Exporting Contact List %s", data.id);
-              console.dir(data);
-            })
-            .fail(function(error){ console.error(error); });
-        })
-        .fail(function(error){ console.error(error); });
-    };
+      websocket.onopen = function(){
+        console.log("WebSocket communicating with %s", websocket.url);
+        // When the WebSocket is opened, subscribe to all topics we want (here 1 only)
+        notifications_api.postChannelSubscriptions(channel_data.id, [{ id: export_topic_id }])
+          .done(function(subscription_data){
+            // When we have subscribed, start the Contacts export
+            outbound_api.postContactlistExport(contactlist_id)
+              .done(function(export_data){
+                console.log("Exporting Contact List %s", export_data.id);
+                console.dir(export_data);
+              })
+              .fail(function(error){ console.error(error); });
+          })
+          .fail(function(error){ console.error(error); });
+      };
 
-    // when we get something, we can set up the download link
-    websocket.onmessage = function(message) {
-      console.log("Received message on WebSocket");
-      console.dir(message);
-      var data = JSON.parse(message.data);
-      console.log("Data topic: %s", data.topicName);
-      switch (data.topicName) {
-        case export_id: {
-          console.log("Received message for topic: %s", data.topicName);
-          if (data.eventBody)
-          {
-            if (data.eventBody.downloadUrl)
+      // Now... the "Message loop" for our WebSocket
+      websocket.onmessage = function(message) {
+        console.log("Received message on WebSocket");
+        console.dir(message);
+        var data = JSON.parse(message.data);
+        console.log("Data topic: %s", data.topicName);
+        switch (data.topicName) {
+          case export_id: {
+            console.log("Received message for topic: %s", data.topicName);
+            if (data.eventBody)
             {
-              console.log("Received a download URL: %s", data.eventBody.downloadUrl);
-              export_contacts.processed();
-              setTimeout(function(){
-                $('#export_contacts_process').hide();
-                $('#download_contacts_process').show();
-                $('#download_contacts_process #download_link').attr('href', data.eventBody.downloadUrl);
-              }, 500);
-              websocket.close();
-            }
-          }
-          else
-          {
-            console.error("Malformed data for topic: %s", data.topicName);
-            console.dir(data);
-          }
-          break;
-        }
-        case 'channel.metadata': {
-          if (data.eventBody) {
-            switch (data.eventBody.message) {
-              case 'WebSocket Heartbeat': {
-                console.log("Received a heartbeat");
-                break;
-              }
-              default: {
-                console.log("Unknown message received: %s", data.eventBody.toString());
-                break;
+              if (data.eventBody.downloadUrl)
+              {
+                console.log("Received a download URL: %s", data.eventBody.downloadUrl);
+                export_contacts.processed();
+                setTimeout(function(){
+                  $('#export_contacts_process').hide();
+                  $('#download_contacts_process').show();
+                  $('#download_contacts_process #download_link').attr('href', data.eventBody.downloadUrl);
+                }, 500);
+                websocket.close();
               }
             }
+            else
+            {
+              console.error("Malformed data for topic: %s", data.topicName);
+              console.dir(data);
+            }
+            break;
           }
-          else
+          case 'channel.metadata': {
+            if (data.eventBody) {
+              switch (data.eventBody.message) {
+                case 'WebSocket Heartbeat': {
+                  // On long operations, the WebSocket will receive a HeartBeat every 30 seconds
+                  // We have nothing to do much, so tracing it for now
+                  console.log("Received a heartbeat");
+                  break;
+                }
+                default: {
+                  console.log("Unknown message received: %s", data.eventBody.toString());
+                  break;
+                }
+              }
+            }
+            else
+            {
+              console.log("Unknown metadata");
+              console.dir(data);
+            }
+            break;
+          }
+          default:
           {
-            console.log("Unknown metadata");
+            console.log("Unknown topicName: %s", data.topicName);
             console.dir(data);
           }
-          break;
         }
-        default:
-        {
-          console.log("Unknown topicName: %s", data.topicName);
-          console.dir(data);
-        }
-      }
-    };
-  })
-  .fail(function(error){ console.error(error); });
+      };
+    })
+    .fail(function(error){ console.error(error); });
 }
 
 function on_click_update_contacts(event)
