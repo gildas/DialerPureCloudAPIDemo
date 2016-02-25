@@ -8,127 +8,13 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='/bower_components/bootswatch-dist/css/bootstrap.min.css' />
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
-    <!-- SCRIPTS  {{{ -->
-    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="/bower_components/jquery.redirect/jquery.redirect.js"></script>
-    <script src="/bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
-    <script src="/bower_components/mustache.js/mustache.min.js"></script>
-    <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
     <script language='javascript'>
       "use strict";
 
-      //var purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
-      var purecloud_session = new PureCloudSession();
-
-      purecloud_session.setEnvironment('mypurecloud.<%= settings.purecloud_region %>');
-      <% if (token) { %>
-        console.log("Received token from Web Session: <%= token %>");
-      purecloud_session.setAuthToken("<%= token %>");
-      <% } else { %>
-      if (purecloud_session.getAuthToken())
-      {
-        console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
-        new UsersApi(purecloud_session).getMe()
-          .done(function(user){
-            console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
-            //setTimeout(function() { console.log("10 second pause before redirecting to /login"); }, 10000);
-            $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
-          })
-          .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
-      }
-      <% } %>
-
-      function login()
-      {
-        console.log("Logging in to " + purecloud_session._host + '...');
-        console.log("PureCloud application id: <%= settings.application_id %>");
-        console.log("PureCloud redirect URI: " + window.location.href);
-        purecloud_session.authorize("<%= settings.application_id %>", window.location.href)
-          .done(function(){
-            console.log('Logged in!');
-          });
-      }
-
-      function logout()
-      {
-        console.log("Logging out...");
-        purecloud_session.logout();
-        window.location.replace('/logout');
-      }
-
-      function render_template(data, target_id, template_id)
-      {
-        console.log("Rendering into %s with template %s", target_id, template_id);
-        $('#' + target_id).html(Mustache.to_html($('#' + template_id).html(), data));
-      }
-
-      class StateButton {
-        constructor(button_id, on_click_callback)
-        {
-          this.id             = button_id;
-          this.click_callback = on_click_callback;
-        }
-
-        initialize() {
-          $('#'+ this.id + ' #spinner').hide();
-          $('#'+ this.id).attr('data-initial-text', $('#'+ this.id + ' #text').text());
-          if (this.click_callback != null && this.click_callback != undefined) {
-            $('#'+ this.id).on('click', this.click_callback);
-          }
-        }
-
-        processing() {
-          var button_id = this.id;
-          $('#'+ button_id).addClass('disabled');
-          $('#'+ button_id + ' #text').fadeOut(function(){
-            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processing-text')).fadeIn(function(){
-              $('#'+ button_id + ' #spinner').show();
-            });
-          });
-        }
-
-        processed() {
-          var button_id = this.id;
-          $('#'+ button_id + ' #text').fadeOut(function(){
-            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn(function() {
-              $('#'+ button_id + ' #spinner').hide();
-            });
-          });
-          setTimeout(function(){
-            $('#'+ button_id + ' #text').fadeOut(function(){
-              $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-initial-text')).fadeIn(function(){
-                $('#'+ button_id).removeClass('disabled');
-              });
-            });
-          }, 2000);
-        }
-      }
-
-      function RestRequest(method, path, max_tries, timeout, body)
-      {
-        return $.ajax({
-          method: method,
-          url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1' + path,
-          headers: {
-            'Accept':       'application/json',
-            'Content-Type': 'application/json',
-          },
-          beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
-          timeout: 5000,
-          shouldRetry: 5,
-          data: (body != null || body != undefined) ? JSON.stringify(body) : null,
-        });
-      }
-
-      $('#flash').hide();
-
-      function show_error(error){
-        $('#flash').addClass('alert-danger');
-        $('#flash #text').text(error);
-        $('#flash').show();
-      };
+      var purecloud_region  = '<%= settings.purecloud_region || "com" %>';
+      var purecloud_token   = '<%= purecloud_token %>';
+      var purecloud_session = null;
     </script>
-    <!-- SCRIPTS }}} -->
   </head>
   <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -143,16 +29,18 @@
           <ul class="nav navbar-nav">
             <li><a href="/">Home</a></li>
           </ul>
-          <% if (token) { %>
           <ul class="nav navbar-nav navbar-right">
-            <li><p class="navbar-text"><a href="/users/me" class="navbar-link"><%= current_user.displayName %>&nbsp;<span class="glyphicon glyphicon-user"></span></a></p></li>
-            <li><a href="javascript:logout()"i class="navbar-link"><span class="glyphicon glyphicon-log-out"></span> Log off</a></li>
+            <li>
+              <p class="navbar-text logged_in">
+                <a id="text_ok" href="/users/me" class="navbar-link"><span id="user"></span>&nbsp;<span class="glyphicon glyphicon-user"></span></a>
+                <span id="text_ng">&nbsp;</span>
+              </p>
+            </li>
+            <li>
+              <a id='logout_form' href="javascript:logout()" class="navbar-link"><span class="glyphicon glyphicon-log-out"></span> Log off</a>
+              <a id='login_form' href="javascript:login()" class="btn btn-primary btn-lg active"><span class="glyphicon glyphicon-log-in"></span> Login</a>
+            </li>
           </ul>
-          <% } else { %>
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="javascript:login()" class="btn btn-primary btn-lg active"><span class="glyphicon glyphicon-log-in"</span> Login</a></li>
-          </ul>
-          <% } %>
         </div>
       </div>
     </div>
@@ -194,7 +82,81 @@
           </div>
       </footer>
     </div>
-    <script src="/bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
+    <!-- SCRIPTS  {{{ -->
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/bower_components/jquery.redirect/jquery.redirect.js"></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/bower_components/mustache.js/mustache.min.js"></script>
+    <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
+
+    <script src="/javascripts/statebutton.js"></script>
+    <script src="/javascripts/helpers.js"></script>
+    <script language='javascript'>
+      // Due to a bug in PureCloudSession's constructor, we have to set the environment later (still true in 0.20.3)
+      //purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
+      purecloud_session = new PureCloudSession();
+
+      purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
+      <% if (purecloud_token) { %>
+      console.log("Received token from Web Session: <%= purecloud_token %>");
+      purecloud_session.setAuthToken("<%= purecloud_token %>");
+      <% } else { %>
+      if (purecloud_session.getAuthToken())
+      {
+        console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
+        new UsersApi(purecloud_session).getMe()
+          .done(function(user){
+            console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
+            $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
+          })
+          .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
+      }
+      <% } %>
+
+      function login()
+      {
+        console.log("Logging in to " + purecloud_session._host + '...');
+        console.log("PureCloud application id: <%= settings.application_id %>");
+        console.log("PureCloud redirect URI: " + window.location.href);
+        purecloud_session.authorize("<%= settings.application_id %>", window.location.href)
+          .done(function(){ console.log('Logged in!'); enable_if_loggedin(); });
+      }
+
+      function logout()
+      {
+        console.log("Logging out...");
+        purecloud_session.logout();
+        window.location.replace('/logout');
+      }
+
+      function enable_if_loggedin()
+      {
+        if (purecloud_session && purecloud_session.hasAuthorizationToken()) {
+          console.log("User is logged in");
+          $('.logged_in #text_ok #user').text('<%= current_user ? current_user.displayName : "" %>');
+          $('.logged_in #text_ok').show();
+          $('.logged_in #text_ng').hide();
+          $('.logged_in').removeClass('disabled');
+          $('#login_form').hide();
+          $('#logout_form').show();
+        } else {
+          console.log("User is NOT logged in");
+          $('.logged_in #text_ok #user').text("");
+          $('.logged_in #text_ok').hide();
+          $('.logged_in #text_ng').show();
+          $('.logged_in').addClass('disabled');
+          $('#login_form').show();
+          $('#logout_form').hide();
+        }
+      }
+
+      $(document).ready(function(){
+        $('#flash').hide();
+        enable_if_loggedin();
+      });
+    </script>
+    <!-- SCRIPTS }}} -->
+    
   </body>
 </html>
 
