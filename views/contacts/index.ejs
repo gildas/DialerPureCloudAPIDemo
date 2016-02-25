@@ -1,20 +1,39 @@
 <% layout('../layout') -%>
 
-<script>
-var outbound_api = new OutboundApi(purecloud_session);
-var contactlist  = null;
-var contacts     = [];
+<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
+<hr/>
+<div id="contacts_view"></div>
 
-if (contactlist == null)
+
+<div>
+  <a href="/ContactLists/<%= contactlist_id %>">Back to List</a>
+</div>
+
+<script id="contacts_template" type="text/template">
+<h4><span class="badge">{{size}}</span> Contacts in ContactList {{name}}</h4>
+<table class="table">
+  <thead>
+  <tr><th>id</th><th>Email</th><th>&nbsp;</th>
+  </thead>
+  <tbody></tbody>
+</table>
+</div>
+</script>
+
+<script>
+var outbound_api;
+var contactlist;
+var contacts;
+
+function initialize_view()
 {
+  outbound_api = new OutboundApi(purecloud_session);
+  contacts     = [];
+
   console.log('Loading ContactList <%= contactlist_id %>');
   outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
     .done(view_contacts)
     .fail(function(error){ console.error(error); });
-}
-else
-{
- // view_contact(contactlist);
 }
 
 function view_contacts(data)
@@ -85,26 +104,4 @@ function on_click_delete(event)
 
   console.log("deleting contact: %s", event.data);
 }
-
 </script>
-
-<script id="contacts_template" type="text/template">
-<h4><span class="badge">{{size}}</span> Contacts in ContactList {{name}}</h4>
-<table class="table">
-  <thead>
-  <tr><th>id</th><th>Email</th><th>&nbsp;</th>
-  </thead>
-  <tbody></tbody>
-</table>
-</div>
-
-</script>
-
-<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-<hr/>
-<div id="contacts_view"></div>
-
-
-<div>
-  <a href="/ContactLists/<%= contactlist_id %>">Back to List</a>
-

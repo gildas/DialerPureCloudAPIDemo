@@ -92,27 +92,6 @@
     <script src="/javascripts/statebutton.js"></script>
     <script src="/javascripts/helpers.js"></script>
     <script language='javascript'>
-      // Due to a bug in PureCloudSession's constructor, we have to set the environment later (still true in 0.20.3)
-      //purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
-      purecloud_session = new PureCloudSession();
-
-      purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
-      <% if (purecloud_token) { %>
-      console.log("Received token from Web Session: <%= purecloud_token %>");
-      purecloud_session.setAuthToken("<%= purecloud_token %>");
-      <% } else { %>
-      if (purecloud_session.getAuthToken())
-      {
-        console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
-        new UsersApi(purecloud_session).getMe()
-          .done(function(user){
-            console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
-            $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
-          })
-          .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
-      }
-      <% } %>
-
       function login()
       {
         console.log("Logging in to " + purecloud_session._host + '...');
@@ -152,6 +131,28 @@
 
       $(document).ready(function(){
         $('#flash').hide();
+        // Due to a bug in PureCloudSession's constructor, we have to set the environment later (still true in 0.20.3)
+        //purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
+        purecloud_session = new PureCloudSession();
+
+        purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
+        <% if (purecloud_token) { %>
+        console.log("Received token from Web Session: <%= purecloud_token %>");
+        purecloud_session.setAuthToken("<%= purecloud_token %>");
+        <% } else { %>
+        if (purecloud_session.getAuthToken())
+        {
+          console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
+          new UsersApi(purecloud_session).getMe()
+            .done(function(user){
+              console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
+              $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
+            })
+            .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
+        }
+        <% } %>
+
+        initialize_view();
         enable_if_loggedin();
       });
     </script>

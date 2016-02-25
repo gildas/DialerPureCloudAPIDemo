@@ -1,19 +1,35 @@
 <% layout('../layout') -%>
 
-<script>
-var routing_api  = new RoutingApi(purecloud_session);
-var outbound_api = new OutboundApi(purecloud_session);
-var skills = null;
+<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
-if (skills == null)
+<div class="row">
+  <div id="skills_view" class="col-md-4"></div>
+</div>
+
+<script id="skills_template" type="text/template">
+<h3>Skills <span class="badge">{{total}}</span></h3>
+<table class="table">
+  <tr><th>Skill Name</th></tr>
+  {{#entities}}
+  <!-- <tr><td><a href="/skills/{{id}}" >{{name}}</a></td></tr> -->
+  <tr><td>{{name}}</td></tr>
+  {{/entities}}
+</table>
+<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
+<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<script>
+var routing_api;
+var skills;
+
+function initialize_view()
 {
+  routing_api = new RoutingApi(purecloud_session);
+
   routing_api.getSkills()
     .done(view_skills)
     .fail(function(error){ console.error(error); });
-}
-else
-{
-  view_skills(skills);
 }
 
 function next_page()
@@ -35,22 +51,3 @@ function view_skills(data)
   $('#spinner-load').hide();
 }
 </script>
-
-<script id="skills_template" type="text/template">
-<h3>Skills <span class="badge">{{total}}</span></h3>
-<table class="table">
-  <tr><th>Skill Name</th></tr>
-  {{#entities}}
-  <!-- <tr><td><a href="/skills/{{id}}" >{{name}}</a></td></tr> -->
-  <tr><td>{{name}}</td></tr>
-  {{/entities}}
-</table>
-<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
-<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
-</script>
-
-<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-
-<div class="row">
-  <div id="skills_view" class="col-md-4"></div>
-</div>

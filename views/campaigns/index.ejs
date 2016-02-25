@@ -1,19 +1,25 @@
 <% layout('../layout') -%>
 
-<script>
-var outbound_api = new OutboundApi(purecloud_session);
-var campaigns = null;
-var schedule_call = new StateButton('schedule_call', on_click_schedule_call);
+<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
-if (campaigns == null)
+<div class="row">
+  <div id="campaigns_view" class="col-md-4"></div>
+  <div id="campaign_view"  class="col-md-4"></div>
+</div>
+
+<script>
+var outbound_api;
+var campaigns;
+var schedule_call;
+
+function initialize_view()
 {
+  outbound_api  = new OutboundApi(purecloud_session);
+  schedule_call = new StateButton('schedule_call', on_click_schedule_call);
+
   outbound_api.getCampaigns()
     .done(view_campaigns)
     .fail(function(error){ console.error(error); });
-}
-else
-{
-  view_campaigns(campaigns);
 }
 
 function next_page()
@@ -132,10 +138,3 @@ function on_click_schedule_call(event)
   </div>
 </div>
 </script>
-
-<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-
-<div class="row">
-  <div id="campaigns_view" class="col-md-4"></div>
-  <div id="campaign_view"  class="col-md-4"></div>
-</div>
