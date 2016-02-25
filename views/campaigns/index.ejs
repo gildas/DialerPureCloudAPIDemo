@@ -7,6 +7,41 @@
   <div id="campaign_view"  class="col-md-4"></div>
 </div>
 
+<script id="campaigns_template" type="text/template">
+<h3>Campaigns <span class="badge">{{total}}</span></h3>
+<table class="table">
+  {{#entities}}
+  <!-- <tr><td><a href="/campaign/{{id}}" >{{name}}</a></td></tr> -->
+  <tr><td><a class="show_campaign" href="#" rel="{{id}}">{{name}}</a></td></tr>
+  {{/entities}}
+</table>
+<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
+<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<script id="campaign_template" type="text/template">
+<h4>Details</h4>
+<table class="table">
+  <tr><td>Name        </td><td>{{name}}, version {{version}}</td></tr>
+  <tr><td>Status      </td><td>{{campaignStatus}}</td></tr>
+  <tr><td>Caller Name </td><td>{{callerName}}</td></tr>
+  <tr><td>Queue       </td><td>{{queue.name}}</td></tr>
+  <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
+  <tr><td>Rule Sets   </td><td>{{#ruleSets}}{{name}},&nbsp;{{/ruleSets}}</td></tr>
+</table>
+<div class="row">
+  <div class="col-md-2">
+<a id="edit_campaign" class="btn btn-default" href="/campaigns/{{id}}/edit" alt="Edit" data-toggle="tooltip" title="Edit"><span class='glyphicon glyphicon-edit'></span> &raquo;</a>
+  </div>
+  <div class="col-md-8">
+    <button id="schedule_call" class="btn btn-default" rel="{{id}}" data-processing-text="Scheduling..." data-processed-text="Scheduled">
+      <span id="text">Schedule</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+    </button>
+    <br/>calls for tomorrow at 10AM
+  </div>
+</div>
+</script>
+
 <script>
 var outbound_api;
 var campaigns;
@@ -18,7 +53,7 @@ function initialize_view()
   schedule_call = new StateButton('schedule_call', on_click_schedule_call);
 
   outbound_api.getCampaigns()
-    .done(view_campaigns)
+    .done(function(data){ campaigns = data; view_campaigns(campaigns); })
     .fail(function(error){ console.error(error); });
 }
 
@@ -32,11 +67,10 @@ function previous_page()
   purecloud_session.get(last_data.previousUri).done(view_campaigns);
 }
 
-function view_campaigns(data)
+function view_campaigns(campaigns)
 {
-  console.log("Displaying %d Campaigns", data.total);
-  console.dir(data);
-  campaigns = data;
+  console.log("Displaying %d Campaigns", campaigns.total);
+  console.dir(campaigns);
   render_template(campaigns, 'campaigns_view', 'campaigns_template');
   $('#spinner-load').hide();
   $('a.show_campaign').on('click', on_click_campaign);
@@ -102,39 +136,4 @@ function on_click_schedule_call(event)
     })
     .fail(function(error){ console.error(error); });
 }
-</script>
-
-<script id="campaigns_template" type="text/template">
-<h3>Campaigns <span class="badge">{{total}}</span></h3>
-<table class="table">
-  {{#entities}}
-  <!-- <tr><td><a href="/campaign/{{id}}" >{{name}}</a></td></tr> -->
-  <tr><td><a class="show_campaign" href="#" rel="{{id}}">{{name}}</a></td></tr>
-  {{/entities}}
-</table>
-<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
-<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
-</script>
-
-<script id="campaign_template" type="text/template">
-<h4>Details</h4>
-<table class="table">
-  <tr><td>Name        </td><td>{{name}}, version {{version}}</td></tr>
-  <tr><td>Status      </td><td>{{campaignStatus}}</td></tr>
-  <tr><td>Caller Name </td><td>{{callerName}}</td></tr>
-  <tr><td>Queue       </td><td>{{queue.name}}</td></tr>
-  <tr><td>Contact List</td><td>{{contactList.name}}</td></tr>
-  <tr><td>Rule Sets   </td><td>{{#ruleSets}}{{name}},&nbsp;{{/ruleSets}}</td></tr>
-</table>
-<div class="row">
-  <div class="col-md-2">
-<a id="edit_campaign" class="btn btn-default" href="/campaigns/{{id}}/edit" alt="Edit" data-toggle="tooltip" title="Edit"><span class='glyphicon glyphicon-edit'></span> &raquo;</a>
-  </div>
-  <div class="col-md-8">
-    <button id="schedule_call" class="btn btn-default" rel="{{id}}" data-processing-text="Scheduling..." data-processed-text="Scheduled">
-      <span id="text">Schedule</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
-    </button>
-    <br/>calls for tomorrow at 10AM
-  </div>
-</div>
 </script>
