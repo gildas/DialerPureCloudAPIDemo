@@ -82,13 +82,12 @@ function initialize_view()
     .fail(function(error){ console.error(error); });
 }
 
-function view_campaign(data, rulesets)
+function view_campaign(campaign, rulesets)
 {
   console.log("Displaying Campaign %s", data.id);
-  console.dir(data);
+  console.dir(campaign);
   console.log("Available rule sets:");
   console.dir(rulesets);
-  campaign = data;
   render_template({
     campaign: campaign,
     rulesets: rulesets,
@@ -124,7 +123,6 @@ function on_click_update_campaign(event)
     console.dir(ref);
     console.groupEnd();
     return ref;
-    //return { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
   });
   console.groupEnd();
 
