@@ -12,7 +12,6 @@
       "use strict";
 
       var purecloud_region  = '<%= settings.purecloud_region || "com" %>';
-      var purecloud_token   = '<%= purecloud_token %>';
       var purecloud_session = null;
     </script>
   </head>
@@ -97,7 +96,7 @@
         console.log("Logging in to " + purecloud_session._host + '...');
         console.log("PureCloud application id: <%= settings.application_id %>");
         console.log("PureCloud redirect URI: " + window.location.href);
-        purecloud_session.authorize("<%= settings.application_id %>", window.location.href)
+        purecloud_session.authorize("<%= settings.application_id %>", window.location.href, null, 'mypurecloud.' + purecloud_region)
           .done(function(){ console.log('Logged in!'); enable_if_loggedin(); });
       }
 
@@ -135,6 +134,10 @@
         //purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
         purecloud_session = new PureCloudSession();
 
+        purecloud_session.authorize("<%= settings.application_id %>", window.location.href, null, 'mypurecloud.' + purecloud_region)
+          .done(function(){ console.log('Logged in!'); enable_if_loggedin(); });
+        /*
+      var purecloud_token   = '<%= purecloud_token %>';
         purecloud_session.setEnvironment('mypurecloud.' + purecloud_region);
         <% if (purecloud_token) { %>
         console.log("Received token from Web Session: <%= purecloud_token %>");
@@ -151,6 +154,7 @@
             .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
         }
         <% } %>
+        */
 
         initialize_view();
         enable_if_loggedin();

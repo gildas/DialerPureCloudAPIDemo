@@ -135,7 +135,7 @@ function on_click_import_contacts(event)
   $.ajax({
     method: 'POST',
     url: 'https://apps.mypurecloud.' + purecloud_region + '/uploads/contactlist',
-    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_token); },
+    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_session.getAuthToken()); },
     processData: false,
     contentType: false,
     timeout: 5000,

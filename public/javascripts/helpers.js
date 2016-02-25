@@ -18,7 +18,7 @@ function RestRequest(method, path, max_tries, timeout, body) {
       'Accept':       'application/json',
       'Content-Type': 'application/json',
     },
-    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_token); },
+    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_session.getAuthToken()); },
     timeout: timeout || 5000,
     shouldRetry: max_tries || 5,
     data: (body != null || body != undefined) ? JSON.stringify(body) : null,

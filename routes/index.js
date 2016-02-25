@@ -18,7 +18,7 @@ router.post('/login', function(req, res, next) {
 });
 
 router.get('/logout', function(req, res, next) {
-  console.log('User ' + req.session.user.username + ' has logged out');
+  console.log('User has logged out');
   console.log('killing session ' + req.session.id);
   req.session.destroy(function() { res.redirect('/'); });
 });
