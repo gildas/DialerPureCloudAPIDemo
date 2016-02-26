@@ -45,7 +45,9 @@ app.use('/bower_components', express.static(path.join(__dirname, '/bower_compone
 app.use(function(req, res, next) {
   console.log("%s %s", req.method, req.path);
   console.log('Session id: ' + req.session.id);
+  if (req.session.token) { console.log('Session Token: ' + req.session.token); }
   if (req.session.user)  { console.log('Session user:  ' + req.session.user.username); }
+  res.locals.purecloud_token = req.session.token;
   res.locals.current_user    = req.session.user;
   res.locals.git_commit      = git_commit;
   res.locals.git_branch      = git_branch;
