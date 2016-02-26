@@ -1,12 +1,33 @@
 <% layout('../layout') -%>
 
-<script>
-var outbound_api = new OutboundApi(purecloud_session);
-var contactlist  = null;
-var contact      = null;
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
-if (contactlist == null)
+<div id="contact_view"></div>
+
+<div>
+    <a href="/Contacts/?contactlist_id=<%= contactlist_id %>">Back to Contacts</a>
+  | <a href="/ContactLists/<%= contactlist_id %>">Back to Contact List</a>
+</div>
+
+<script id="contact_template" type="text/template">
+<h4>Contact Details</h4>
+<hr/>
+<dl class="dl-horizontal">
+  {{#columns}}
+  <dt>{{name}}</dt> <dd>{{value}}</dd>
+  {{/columns}}
+</dl>
+</script>
+
+<script>
+var outbound_api;
+var contactlist;
+var contact;
+
+function initialize_view()
 {
+  outbound_api = new OutboundApi(purecloud_session);
+
   console.log('Loading ContactList <%= contactlist_id %>');
   outbound_api.getContactlist('<%= contactlist_id %>')
     .done(function(data) {
@@ -45,23 +66,3 @@ function view_contact(data)
   $('#spinner-load').hide();
 }
 </script>
-
-<script id="contact_template" type="text/template">
-<h4>Contact Details</h4>
-<hr/>
-<dl class="dl-horizontal">
-  {{#columns}}
-  <dt>{{name}}</dt> <dd>{{value}}</dd>
-  {{/columns}}
-</dl>
-
-</script>
-
-<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-
-<div id="contact_view"></div>
-
-<div>
-    <a href="/Contacts/?contactlist_id=<%= contactlist_id %>">Back to Contacts</a>
-  | <a href="/ContactLists/<%= contactlist_id %>">Back to Contact List</a>
-</div>

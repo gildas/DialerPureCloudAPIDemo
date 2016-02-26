@@ -1,17 +1,33 @@
 <% layout('../layout') -%>
 
-<script>
-var contactlists = null;
+<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
-if (contactlists == null)
+<div class="row">
+  <div id="contactlists_view" class="col-md-4"></div>
+</div>
+
+<script id="contactlists_template" type="text/template">
+<h3>Contact Lists <span class="badge">{{total}}</span></h3>
+<table class="table">
+  {{#entities}}
+  <tr><td><a href="/contactlists/{{id}}" >{{name}}</a></td></tr>
+  {{/entities}}
+</table>
+<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
+<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<script>
+var outbound_api;
+var contactlists;
+
+function initialize_view()
 {
+  outbound_api = new OutboundApi(purecloud_session);
+
   new OutboundApi(purecloud_session).getContactlists()
     .done(view_contactlists)
     .fail(function(error){ console.error(error); });
-}
-else
-{
-  view_contactlists(contactlists);
 }
 
 function next_page()
@@ -33,20 +49,3 @@ function view_contactlists(data)
   $('#spinner-load').hide();
 }
 </script>
-
-<script id="contactlists_template" type="text/template">
-<h3>Contact Lists <span class="badge">{{total}}</span></h3>
-<table class="table">
-  {{#entities}}
-  <tr><td><a href="/contactlists/{{id}}" >{{name}}</a></td></tr>
-  {{/entities}}
-</table>
-<button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
-<button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
-</script>
-
-<h2>Index &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-
-<div class="row">
-  <div id="contactlists_view" class="col-md-4"></div>
-</div>

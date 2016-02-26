@@ -1,20 +1,50 @@
 <% layout('../layout') -%>
 
-<script>
-var outbound_api = new OutboundApi(purecloud_session);
-var contactlist  = null;
-var create_contact   = new StateButton('create_contact', on_click_create_contact);
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
-if (contactlist == null)
+<div id="contact_view"></div>
+
+<div>
+  <a href="/ContactLists/<%= contactlist_id %>">Back to List</a>
+</div>
+
+<script id="contact_template" type="text/template">
+<h4>New Contact in ContactList: {{contactlist.name}}</h4>
+<hr/>
+<div class="form-horizontal">
+  <input id="contactlist_id" name="contactlist_id" type="hidden" value="{{contactlist.id}}"/>
+
+  {{#columns}}
+  <div class="form-group">
+    <label class="control-label col-md-2" for="{{id}}">{{name}}</label>
+    <input type="text" id="{{id}}"/>
+  </div>
+  {{/columns}}
+
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md10">
+      <button id="create_contact" class="btn btn-default" rel="{{id}}" data-processing-text="Creating..." data-processed-text="Created">
+        <span id="text">Create</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
+    </div>
+  </div>
+</div>
+</script>
+
+<script>
+var outbound_api;
+var contactlist;
+var create_contact;
+
+function initialize_view()
 {
+  outbound_api   = new OutboundApi(purecloud_session);
+  create_contact = new StateButton('create_contact', on_click_create_contact);
+
   console.log('Loading ContactList <%= contactlist_id %>');
- outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
+  outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
     .done(view_contact)
     .fail(function(error){ console.error(error); });
-}
-else
-{
-  view_contact(contactlist);
 }
 
 function view_contact(data)
@@ -74,35 +104,3 @@ function on_click_create_contact(event)
 }
 
 </script>
-
-<script id="contact_template" type="text/template">
-<h4>New Contact in ContactList: {{contactlist.name}}</h4>
-<hr/>
-<div class="form-horizontal">
-  <input id="contactlist_id" name="contactlist_id" type="hidden" value="{{contactlist.id}}"/>
-
-  {{#columns}}
-  <div class="form-group">
-    <label class="control-label col-md-2" for="{{id}}">{{name}}</label>
-    <input type="text" id="{{id}}"/>
-  </div>
-  {{/columns}}
-
-  <div class="form-group">
-    <div class="col-md-offset-2 col-md10">
-      <button id="create_contact" class="btn btn-default" rel="{{id}}" data-processing-text="Creating..." data-processed-text="Created">
-        <span id="text">Create</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
-      </button>
-    </div>
-  </div>
-</div>
-
-</script>
-
-<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-
-<div id="contact_view"></div>
-
-<div>
-  <a href="/ContactLists/<%= contactlist_id %>">Back to List</a>
-</div>

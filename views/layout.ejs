@@ -5,133 +5,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='/bower_components/bootswatch-dist/css/bootstrap.min.css' />
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
-    <!-- SCRIPTS  {{{ -->
-    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
-    <script src="/bower_components/jquery.redirect/jquery.redirect.js"></script>
-    <script src="/bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
-    <script src="/bower_components/mustache.js/mustache.min.js"></script>
-    <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
     <script language='javascript'>
       "use strict";
 
-      //var purecloud_session = new PureCloudSession('mypurecloud.<%= settings.purecloud_region %>');
-      var purecloud_session = new PureCloudSession();
-
-      purecloud_session.setEnvironment('mypurecloud.<%= settings.purecloud_region %>');
-      <% if (token) { %>
-        console.log("Received token from Web Session: <%= token %>");
-      purecloud_session.setAuthToken("<%= token %>");
-      <% } else { %>
-      if (purecloud_session.getAuthToken())
-      {
-        console.log("Received token from OAUTH: " + purecloud_session.getAuthToken());
-        new UsersApi(purecloud_session).getMe()
-          .done(function(user){
-            console.log('PureCloud User: ' + user.username + ' (' + user.displayName + ')');
-            //setTimeout(function() { console.log("10 second pause before redirecting to /login"); }, 10000);
-            $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
-          })
-          .fail(function(error){ console.error('PureCloud User: none, error: ' + error); });
-      }
-      <% } %>
-
-      function login()
-      {
-        console.log("Logging in to " + purecloud_session._host + '...');
-        console.log("PureCloud application id: <%= settings.application_id %>");
-        console.log("PureCloud redirect URI: " + window.location.href);
-        purecloud_session.authorize("<%= settings.application_id %>", window.location.href)
-          .done(function(){
-            console.log('Logged in!');
-          });
-      }
-
-      function logout()
-      {
-        console.log("Logging out...");
-        purecloud_session.logout();
-        window.location.replace('/logout');
-      }
-
-      function render_template(data, target_id, template_id)
-      {
-        console.log("Rendering into %s with template %s", target_id, template_id);
-        $('#' + target_id).html(Mustache.to_html($('#' + template_id).html(), data));
-      }
-
-      class StateButton {
-        constructor(button_id, on_click_callback)
-        {
-          this.id             = button_id;
-          this.click_callback = on_click_callback;
-        }
-
-        initialize() {
-          $('#'+ this.id + ' #spinner').hide();
-          $('#'+ this.id).attr('data-initial-text', $('#'+ this.id + ' #text').text());
-          if (this.click_callback != null && this.click_callback != undefined) {
-            $('#'+ this.id).on('click', this.click_callback);
-          }
-        }
-
-        processing() {
-          var button_id = this.id;
-          $('#'+ button_id).addClass('disabled');
-          $('#'+ button_id + ' #text').fadeOut(function(){
-            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processing-text')).fadeIn(function(){
-              $('#'+ button_id + ' #spinner').show();
-            });
-          });
-        }
-
-        processed() {
-          var button_id = this.id;
-          $('#'+ button_id + ' #text').fadeOut(function(){
-            $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-processed-text')).fadeIn(function() {
-              $('#'+ button_id + ' #spinner').hide();
-            });
-          });
-          setTimeout(function(){
-            $('#'+ button_id + ' #text').fadeOut(function(){
-              $('#'+ button_id + ' #text').text($('#'+ button_id).attr('data-initial-text')).fadeIn(function(){
-                $('#'+ button_id).removeClass('disabled');
-              });
-            });
-          }, 2000);
-        }
-      }
-
-      function RestRequest(method, path, max_tries, timeout, body)
-      {
-        return $.ajax({
-          method: method,
-          url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1' + path,
-          headers: {
-            'Accept':       'application/json',
-            'Content-Type': 'application/json',
-          },
-          beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
-          timeout: 5000,
-          shouldRetry: 5,
-          data: (body != null || body != undefined) ? JSON.stringify(body) : null,
-        });
-      }
-
-      $('#flash').hide();
-
-      function show_error(error){
-        $('#flash').addClass('alert-danger');
-        $('#flash #text').text(error);
-        $('#flash').show();
-      };
+      var purecloud_region  = '<%= settings.purecloud_region || "com" %>';
+      var purecloud_session = null;
     </script>
-    <!-- SCRIPTS }}} -->
   </head>
   <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <a class="navbar-brand" href="#">
@@ -143,26 +28,28 @@
           <ul class="nav navbar-nav">
             <li><a href="/">Home</a></li>
           </ul>
-          <% if (token) { %>
           <ul class="nav navbar-nav navbar-right">
-            <li><p class="navbar-text"><a href="/users/me" class="navbar-link"><%= current_user.displayName %>&nbsp;<span class="glyphicon glyphicon-user"></span></a></p></li>
-            <li><a href="javascript:logout()"i class="navbar-link"><span class="glyphicon glyphicon-log-out"></span> Log off</a></li>
+            <li>
+              <p class="navbar-text">
+                <a id="current_user" href="/users/me" class="navbar-link"><span id="user"></span>&nbsp;<span class="glyphicon glyphicon-user"></span></a>
+              </p>
+            </li>
+            <li>
+              <button id="login_off" class="btn btn-primary active" data-login="Log in" data-logoff="Log off">
+                <span id="icon" class="glyphicon"></span>&nbsp;<span id="text">Log in</span>
+              </button>
+            </li>
           </ul>
-          <% } else { %>
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="javascript:login()" class="btn btn-primary btn-lg active"><span class="glyphicon glyphicon-log-in"</span> Login</a></li>
-          </ul>
-          <% } %>
         </div>
       </div>
-    </div>
-
-    <div id="flash" class="alert alert-dismissible fade in">
-      <button type="button" class="close" data-dismiss="alert" arial-label="Close"><span arial-hidden="true">&times;</span></button>
-      <span id="text"></span>
-    </div>
+    </nav>
 
     <div class="container body-content">
+      <div id="flash" class="alert alert-dismissible fade in">
+        <button type="button" class="close" data-dismiss="alert" arial-label="Close"><span arial-hidden="true">&times;</span></button>
+        <span id="text"></span>
+      </div>
+
     <%- body %>
       <hr />
       <footer class="footer">
@@ -194,7 +81,84 @@
           </div>
       </footer>
     </div>
-    <script src="/bower_components/bootswatch-dist/js/bootstrap.min.js"></script>
+    <!-- SCRIPTS  {{{ -->
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/bower_components/jquery.redirect/jquery.redirect.js"></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="/bower_components/mustache.js/mustache.min.js"></script>
+    <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
+    <script src="/javascripts/statebutton.js"></script>
+    <script src="/javascripts/helpers.js"></script>
+    <script language='javascript'>
+      function login(event)
+      {
+        console.log("Logging in mypurecloud." + purecloud_region + '...');
+        console.log("PureCloud application id: <%= settings.application_id %>");
+        console.log("PureCloud redirect URI: " + window.location.href);
+        purecloud_session.authorize("<%= settings.application_id %>", window.location.href, null, 'mypurecloud.' + purecloud_region)
+          .done(function(){
+            console.log("PureCloud Token: %s", purecloud_session.getAuthToken());
+            console.log('a user is logged in, displaying logoff button!');
+              $('#login_off #icon').addClass('glyphicon-log-out');
+              $('#login_off #text').text($('#login_off').attr('data-logoff'));
+              $('#login_off').on('click', logoff);
+              $('.logged_in #text_ok').show();
+              $('.logged_in #text_ng').hide();
+              $('#login_off').show();
+              new UsersApi(purecloud_session).getMe()
+                .done(function(user){
+                  console.log('Logged in user: %s', user.id);
+                  console.dir(user);
+                  $('#current_user #user').text(user.displayName);
+                  $('#current_user').show();
+                  $.ajax({
+                    method: 'POST',
+                    url: '/login',
+                    data: {
+                      token: purecloud_session.getAuthToken(),
+                      user:  JSON.stringify(user),
+                    },
+                  })
+                  .done(function(){ console.log("Current user updated"); });
+                });
+          });
+      }
+
+      function logoff(event)
+      {
+        console.log("Logging off...");
+        purecloud_session.logout();
+        window.location.replace('/');
+      }
+
+      $(document).ready(function(){
+        $('#flash').hide();
+        $('#current_user').hide();
+        $('#login_off').hide();
+        purecloud_session = new PureCloudSession();
+
+        //purecloud_session.debug(true);
+        <% if (purecloud_token) { %>
+        console.log("Received token from Web Session: <%= purecloud_token %>");
+        purecloud_session.setAuthToken("<%= purecloud_token %>");
+        <% } %>
+        if (purecloud_session.hasAuthorizationToken())
+        {
+          // This will verify the token is good as well as setting the environment properly.
+          login();
+        }
+        else
+        {
+          console.log("PureCloud is not logged in, displaying login button");
+          $('#login_off #icon').addClass('glyphicon-log-in');
+          $('#login_off #text').text($('#login_off').attr('data-login'));
+          $('#login_off').on('click', login);
+          $('#login_off').show();
+        }
+        initialize_view(purecloud_session);
+      });
+    </script>
+    <!-- SCRIPTS }}} -->
   </body>
 </html>
 

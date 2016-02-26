@@ -1,50 +1,101 @@
 <% layout('../layout') -%>
 
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
+
+<div id="contactlist_view"></div>
+
+<div>
+  <a href="/ContactLists">Back to List</a>
+</div>
+
+<script id="contactlist_template" type="text/template">
+<h4>ContactList: {{name}}</h4>
+<hr/>
+
+<dl class="dl-horizontal">
+  <dt>Name:</dt><dd>{{name}}, version {{version}}</dd>
+  <dt>{{columnNames.length}} Columns:<dt><dd>{{#columnNames}} {{.}}, {{/columnNames}}</dd>
+  <dt># Contacts:</dt><dd>{{size}}</dd>
+</dl>
+
+<ul>
+  <li><a href="/Contacts/?contactlist_id={{id}}">List</a> all contacts</li>
+  <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
+  <li>
+    <div id="export_contacts_process">
+      <button id="export_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Exporting..." data-processed-text="Exported">
+        <span id="text">Export</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
+      all contacts
+    </div>
+    <div id="download_contacts_process">
+      <a id="download_link" class="" href="">Download</a> all contacts
+    </div>
+  </li>
+  <li>
+    <form id="import_contacts" method="POST" enctype="multipart/form-data" action="https://apps.mypurecloud.<%= settings.purecloud_region %>/uploads/contactlist" class="form-inline" role="form">
+      <div class="form-group">
+        <label for="file">CSV File:</label>
+        <input id="file" name="file" type="file" class="form-control"  required />
+        <input name="fileType" type="hidden" value="contactlist"/>
+        <input name="id" type="hidden" value="{{id}}"/>
+        <input name="contact-id-name" type="hidden" value="inin-outbound-id"/>
+
+        <button id="import_submit" type="submit" class="btn btn-default" rel="{{id}}" data-processing-text="Importing..." data-processed-text="Imported">
+          <span id="text">Import</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+        </button>
+      </div>
+    </form>
+  </li>
+  <!-- These are actually column modifications -->
+  <li>
+    Change Column
+      <select id="update_contacts_ChangeColumnName">
+      {{#columnNames}}
+        <option value="{{.}}">{{.}}</option>
+      {{/columnNames}}
+      </select>
+      to
+      <input id="update_contacts_ChangeColumnValue" type="text"/>
+      for all contacts with
+      <select id="update_contacts_SearchColumnName">
+      {{#columnNames}}
+        <option value="{{.}}">{{.}}</option>
+      {{/columnNames}}
+      </select>
+      to
+      <input id="update_contacts_SearchColumnValue" type="text"/>
+      <button id="update_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Updating..." data-processed-text="Updated">
+        <span id="text">Update</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
+      <div id="update_contacts_progress">
+        <br/>
+        <p>Processed <span id="update_contacts_processed_count" class="badge">0</span> and Updated <span id="update_contacts_updated_count" class="badge">0</span>/<span class="badge">{{size}}</span> contacts.
+        </p>
+      </div>
+  </li>
+</ul>
+</script>
+
 <script>
-var outbound_api      = new OutboundApi(purecloud_session);
-var notifications_api = new NotificationsApi(purecloud_session);
-var contactlist       = null;
-var channels          = null;
-var subscriptions     = null;
-var update_contacts   = new StateButton('update_contacts', on_click_update_contacts);
-var import_submit     = new StateButton('import_submit');
-var export_contacts   = new StateButton('export_contacts', on_click_export_contacts);
-var download_contacts = new StateButton('download_contacts', on_click_download_contacts);
+var outbound_api;
+var notifications_api;
+var contactlist;
+var update_contacts;
+var import_submit;
+var export_contacts;
 
-if (contactlist == null)
+function initialize_view()
 {
+  outbound_api      = new OutboundApi(purecloud_session);
+  notifications_api = new NotificationsApi(purecloud_session);
+  update_contacts   = new StateButton('update_contacts', on_click_update_contacts);
+  import_submit     = new StateButton('import_submit');
+  export_contacts   = new StateButton('export_contacts', on_click_export_contacts);
+
   console.log('Loading ContactList <%= id %>');
- outbound_api.getContactlist('<%= id %>', true, true, true)
+  outbound_api.getContactlist('<%= id %>', true, true, true)
     .done(view_contactlist)
-    .fail(function(error){ console.error(error); });
-}
-else
-{
-  view_contactlist(contactlist);
-}
-
-if (channels == null)
-{
-  console.log('Loading Channels');
-  notifications_api.getChannels()
-    .done(function(data){
-      channels = data;
-      console.log("received Notification channels");
-      console.dir(data);
-    })
-    .fail(function(error){ console.error(error); });
-}
-
-if (subscriptions == null)
-{
-  var channel_id = 'ed2p73crsl34agnglg9ubv5lp5';
-  console.log("Loading Subscriptions for Channel %s", channel_id);
- notifications_api.getChannelSubscriptions(channel_id)
-    .done(function(data){
-      channels = data;
-      console.log("received Subscriptions for channel %s", channel_id);
-      console.dir(data);
-    })
     .fail(function(error){ console.error(error); });
 }
 
@@ -65,7 +116,6 @@ function view_contactlist(data)
 
   export_contacts.initialize();
   $('#download_contacts_process').hide();
-  download_contacts.initialize();
 }
 
 function on_click_import_contacts(event)
@@ -74,46 +124,18 @@ function on_click_import_contacts(event)
 
   event.preventDefault();
   import_submit.processing();
+
   var form_data = new FormData($('#import_contacts'));
-  /*------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="file"; filename="PureCloud-ContactList-structure.csv"
-    Content-Type: text/csv
 
-
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="fileType"
-
-    contactlist
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="id"
-
-    58310346-2735-4456-9857-309dd5d90b36
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah
-    Content-Disposition: form-data; name="contact-id-name"
-
-    inin-outbound-id
-    ------WebKitFormBoundarycTLVeOsDr3rnJ0Ah--
-  */
   form_data.append('file', $('#import_contacts #file')[0].files[0]); // Here we assume a file was selected...
   form_data.append('fileType', 'contactlist');
   form_data.append('id', contactlist.id);
   form_data.append('contact-id-name', 'inin-outbound-id');
 
-  /* // Use the following to "debug" the actual HTTP request (check the network tab of the browser debugger)
   $.ajax({
     method: 'POST',
-    url: '/',
-    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
-    processData: false,
-    contentType: false,
-    data: form_data,
-  });
-  */
-
-  $.ajax({
-    method: 'POST',
-    url: 'https://api.mypurecloud.<%= settings.purecloud_region %>/api/v1/uploads/contactlist',
-    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer <%= token %>'); },
+    url: 'https://apps.mypurecloud.' + purecloud_region + '/uploads/contactlist',
+    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_session.getAuthToken()); },
     processData: false,
     contentType: false,
     timeout: 5000,
@@ -132,7 +154,6 @@ function on_click_import_contacts(event)
     console.log("Wrapping up the buttons");
     import_submit.processed();
   });
-  ;
 }
 
 function on_click_export_contacts(event)
@@ -140,124 +161,94 @@ function on_click_export_contacts(event)
   console.log("Export Click Event!");
   export_contacts.processing();
 
-  outbound_api.postContactlistExport($(this).attr('rel'))
-    .done(function(data){
-      var contactlist_id = data.id;
-      console.log("Exporting Contact List %s", data.id);
+  var contactlist_id  = $(this).attr('rel');
+  var export_topic_id = 'outbound.contactlists.' + contactlist_id + '.export'; // This is the Topic id we will subscribe to
 
-      // Create a channel that will tell when the export is done
-      notifications_api.postChannels()
-        .done(function(data){
-          var channel_id = data.id;
-          console.log("Channel %s created", data.id);
+  // Create a new channel to keep the subscriptions
+  notifications_api.postChannels()
+    .done(function(channel_data){
+      console.log("Channel %s created", channel_data.id);
+      console.dir(channel_data);
 
-          var export_id = 'outbound.contactlists.' + contactlist_id + '.export';
-          var websocket = new WebSocket(data.connectUri);
+      var websocket = new WebSocket(channel_data.connectUri);
 
-          console.log("WebSocket listening on %s", websocket.url);
-          websocket.onopen = function(){
-            notifications_api.postChannelSubscriptions(data.id, [{ id: export_id }]);
-          };
+      websocket.onopen = function(){
+        console.log("WebSocket communicating with %s", websocket.url);
+        // When the WebSocket is opened, subscribe to all topics we want (here 1 only)
+        notifications_api.postChannelSubscriptions(channel_data.id, [{ id: export_topic_id }])
+          .done(function(subscription_data){
+            // When we have subscribed, start the Contacts export
+            outbound_api.postContactlistExport(contactlist_id)
+              .done(function(export_data){
+                console.log("Exporting Contact List %s", export_data.id);
+                console.dir(export_data);
+              })
+              .fail(function(error){ console.error(error); });
+          })
+          .fail(function(error){ console.error(error); });
+      };
 
-          // when we get something, we can download
-          websocket.onmessage = function(message) {
-            console.log("Received message on WebSocket");
-            console.dir(message);
-            var data = JSON.parse(message.data);
-            console.log("Data topic: %s", data.topicName);
-            if (data.topicName == 'channel.metadata')
+      // Now... the "Message loop" for our WebSocket
+      websocket.onmessage = function(message) {
+        console.log("Received message on WebSocket");
+        console.dir(message);
+        var data = JSON.parse(message.data);
+        console.log("Data topic: %s", data.topicName);
+        switch (data.topicName) {
+          case export_topic_id: {
+            console.log("Received message for topic: %s", data.topicName);
+            if (data.eventBody)
             {
-              if (data.eventBody.message)
+              if (data.eventBody.downloadUrl)
               {
-                console.log("Event Message: \"%s\"", data.eventBody.message);
-                if (data.eventBody.message == 'WebSocket Heartbeat')
-                {
-                  console.log('Sending back OK');
-                  websocket.send('ok');
-                }
-              }
-              else
-              {
-                console.dir(data.eventBody);
+                console.log("Received a download URL: %s", data.eventBody.downloadUrl);
+                export_contacts.processed();
+                setTimeout(function(){
+                  $('#export_contacts_process').hide();
+                  $('#download_contacts_process').show();
+                  $('#download_contacts_process #download_link').attr('href', data.eventBody.downloadUrl);
+                }, 500);
+                websocket.close();
               }
             }
             else
             {
+              console.error("Malformed data for topic: %s", data.topicName);
               console.dir(data);
             }
-          };
-        })
-        .fail(function(error){ console.error(error); });
+            break;
+          }
+          case 'channel.metadata': {
+            if (data.eventBody) {
+              switch (data.eventBody.message) {
+                case 'WebSocket Heartbeat': {
+                  // On long operations, the WebSocket will receive a HeartBeat every 30 seconds
+                  // We have nothing to do much, so tracing it for now
+                  console.log("Received a heartbeat");
+                  break;
+                }
+                default: {
+                  console.log("Unknown message received: %s", data.eventBody.toString());
+                  break;
+                }
+              }
+            }
+            else
+            {
+              console.log("Unknown metadata");
+              console.dir(data);
+            }
+            break;
+          }
+          default:
+          {
+            console.log("Unknown topicName: %s", data.topicName);
+            console.dir(data);
+          }
+        }
+      };
     })
     .fail(function(error){ console.error(error); });
-}
-
-function check_export_contacts(contactlist_id, channel_id, subscriptions, interval)
-{
-  var topic = 'outbound.contactlists.' + contactlist_id + '.export';
-
-  console.log("Subscribing to topic: %s", topic);
-  subscriptions.unshift({ id: topic });
-  notifications_api.putChannelSubscriptions(channel_id, subscriptions)
-    .done(function(data, status, xhr){
-      var pos = data.entities.map(function(entity) { return entity.id; }).indexOf(topic);
-      if (pos != -1)
-      {
-        console.log("Found topic in pos #%d Export is happening!", pos);
-        setTimeout(function(){
-          subscriptions.shift();
-          notifications_api.putChannelSubscriptions(channel_id, subscriptions)
-            .done(function(data){
-              console.log("Export is done!");
-              export_contacts.processed();
-              setTimeout(function(){
-                $('#export_contacts_process').hide();
-                $('#download_contacts_process').show();
-              }, 2000);
-              // https://public-api.ap-southeast-2.mypurecloud.com.au/api/v1/downloads/f38d5568
-              return;
-            })
-            .fail(function(error){ console.error(error); });
-        }, interval);
-        return;
-      }
-      console.error("There are %d entities in channel %s", data.total, channel_id);
-      console.dir(data);
-    })
-    .fail(function(error){ console.error(error); });
-}
-
-function waitfor_export_contacts(contactlist_id, channel_id, interval)
-{
-  var topic = 'outbound.contactlists.' + contactlist_id + '.export';
-  console.log("Waiting for topic: %s to finish", topic);
-  notifications_api.getChannelSubscriptions(channel_id)
-    .done(function(data, status, xhr){
-      var pos = data.entities.map(function(entity) { return entity.id; }).indexOf(topic);
-      if (pos == -1)
-      {
-        console.log("Export is done!");
-        export_contacts.processed();
-        setTimeout(function(){
-          $('#export_contacts_process').hide();
-          $('#download_contacts_process').show();
-        }, 2000);
-        // https://public-api.ap-southeast-2.mypurecloud.com.au/api/v1/downloads/f38d5568
-        return;
-      }
-      console.log("There are %d entities in channel %s", data.total, channel_id);
-      console.dir(data);
-      setTimeout(function(){ waitfor_export_contacts(contactlist_id, channel_id, interval); }, interval);
-    })
-    .fail(function(error){ console.error(error); });
-}
-
-function on_click_download_contacts(event)
-{
-  console.log("Download Click Event!");
-
-  // Prevent link from firing up
-  event.preventDefault();
 }
 
 function on_click_update_contacts(event)
@@ -315,79 +306,3 @@ function on_click_update_contacts(event)
   }
 }
 </script>
-
-<script id="contactlist_template" type="text/template">
-<h4>ContactList: {{name}}</h4>
-<hr/>
-
-<dl class="dl-horizontal">
-  <dt>Name:</dt><dd>{{name}}, version {{version}}</dd>
-  <dt>{{columnNames.length}} Columns:<dt><dd>{{#columnNames}} {{.}}, {{/columnNames}}</dd>
-  <dt># Contacts:</dt><dd>{{size}}</dd>
-</dl>
-
-<ul>
-  <li><a href="/Contacts/?contactlist_id={{id}}">List</a> all contacts</li>
-  <li><a href="/Contacts/new?contactlist_id={{id}}">Add</a> a new contact</li>
-  <li>
-    <div id="export_contacts_process">
-      <button id="export_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Exporting..." data-processed-text="Exported">
-        <span id="text">Export</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
-      </button>
-      all contacts
-    </div>
-    <div id="download_contacts_process">
-      <button id="download_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Downloading..." data-processed-text="Downloaded">
-        <span id="text">Download</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
-      </button>
-      all contacts
-    </div>
-  </li>
-  <li>
-    <form id="import_contacts" method="POST" enctype="multipart/form-data" class="form-inline" role="form">
-      <div class="form-group">
-        <label for="file">CSV File:</label>
-        <input id="file" type="file" class="form-control"  required />
-        <button id="import_submit" type="submit" class="btn btn-default" rel="{{id}}" data-processing-text="Importing..." data-processed-text="Imported">
-          <span id="text">Import</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
-        </button>
-      </div>
-    </form>
-  </li>
-  <!-- These are actually column modifications -->
-  <li>
-    Change Column
-      <select id="update_contacts_ChangeColumnName">
-      {{#columnNames}}
-        <option value="{{.}}">{{.}}</option>
-      {{/columnNames}}
-      </select>
-      to
-      <input id="update_contacts_ChangeColumnValue" type="text"/>
-      for all contacts with
-      <select id="update_contacts_SearchColumnName">
-      {{#columnNames}}
-        <option value="{{.}}">{{.}}</option>
-      {{/columnNames}}
-      </select>
-      to
-      <input id="update_contacts_SearchColumnValue" type="text"/>
-      <button id="update_contacts" class="btn btn-default" rel="{{id}}" data-processing-text="Updating..." data-processed-text="Updated">
-        <span id="text">Update</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
-      </button>
-      <div id="update_contacts_progress">
-        <br/>
-        <p>Processed <span id="update_contacts_processed_count" class="badge">0</span> and Updated <span id="update_contacts_updated_count" class="badge">0</span>/<span class="badge">{{size}}</span> contacts.
-        </p>
-      </div>
-  </li>
-</ul>
-</script>
-
-<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
-
-<div id="contactlist_view"></div>
-
-<div>
-  <a href="/ContactLists">Back to List</a>
-</div>

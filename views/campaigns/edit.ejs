@@ -1,110 +1,11 @@
 <% layout('../layout') -%>
 
-<script>
-var outbound_api = new OutboundApi(purecloud_session);
-var campaign = null;
-var rulesets = null;
-var update_campaign = new StateButton('update_campaign', on_click_update_campaign);
+<h2>Edit &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
 
-if (rulesets == null)
-{
-  console.log('Loading Rulesets');
-  outbound_api.getRulesets()
-    .done(function(data){ rulesets = data; })
-    .fail(function(error){ console.error(error); });
-}
-
-if (campaign == null)
-{
-  console.log('Loading Campaign <%= id %>');
-  outbound_api.getCampaign('<%= id %>')
-    .done(function(data){
-      campaign = data;
-      if (rulesets == null)
-      {
-        console.log('Loading Rulesets');
-        outbound_api.getRulesets()
-          .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
-          .fail(function(error){ console.error(error); });
-      }
-      else
-      {
-        view_campaign(campaign, rulesets);
-      }
-    })
-    .fail(function(error){ console.error(error); });
-}
-else if (rulesets == null)
-{
-  console.log('Loading Rulesets');
-  outbound_api.getRulesets()
-    .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
-    .fail(function(error){ console.error(error); });
-}
-else
-{
-  view_campaign(campaign, rulesets);
-}
-
-function view_campaign(data, rulesets)
-{
-  console.log("Displaying Campaign %s", data.id);
-  console.dir(data);
-  console.log("Available rule sets:");
-  console.dir(rulesets);
-  campaign = data;
-  render_template({
-    campaign: campaign,
-    rulesets: rulesets,
-    selected: function() { return (campaign.ruleSets.indexOf(this.id) != -1) ? "selected" : ""; }
-  }, 'campaign_view', 'campaign_template');
-  $('#spinner-load').hide();
-  update_campaign.initialize();
-}
-
-function on_click_update(event)
-{
-  console.log("Update Click Event!");
-  update_campaign.processing();
-
-  // TODO: if the ruleset has not changed, do not update
-  var ruleset_ids = $('#Campaign_Rulesets').val() || [];
-
-  console.log("Selected ruleset ids:");
-  console.dir(ruleset_ids);
-
-  console.group("Building new rulesets");
-  var new_rulesets = ruleset_ids.map(function(id){
-    console.group("Building ruleset %s", id);
-    console.log("Fetching ruleset");
-    var pos     = rulesets.entities.map(function(entity) { return entity.id; }).indexOf(id);
-    // TODO: If not found ignore?!?
-    var ruleset = rulesets.entities[pos];
-    console.log("ruleset:");
-    console.dir(ruleset);
-
-    var ref = { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
-    console.log("Built:");
-    console.dir(ref);
-    console.groupEnd();
-    return ref;
-    //return { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
-  });
-  console.groupEnd();
-
-  console.log("New rulesets:");
-  console.dir(new_rulesets);
-  console.log("Updating Campaign %s", campaign.id);
-  campaign.ruleSets = new_rulesets;
-  console.dir(campaign);
-  outbound_api.putCampaign(campaign.id, campaign)
-    .done(function(){
-      update_campaign.processed();
-      console.log("Successfully updated Campaign %s", campaign.id);
-    })
-    .fail(function(error){ console.error(error); });
-}
-</script>
+<div id="campaign_view"></div>
+<div>
+  <a href="/Campaigns">Back to List</a>
+</div>
 
 <script id="campaign_template" type="text/template">
 <h4>Campaign</h4>
@@ -158,9 +59,83 @@ function on_click_update(event)
 </div>
 </script>
 
-<h2>Edit &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
+<script>
+var outbound_api;
+var campaign;
+var rulesets;
+var update_campaign;
 
-<div id="campaign_view"></div>
-<div>
-  <a href="/Campaigns">Back to List</a>
-</div>
+function initialize_view()
+{
+  outbound_api    = new OutboundApi(purecloud_session);
+  update_campaign = new StateButton('update_campaign', on_click_update_campaign);
+
+  console.log('Loading Campaign <%= id %>');
+  outbound_api.getCampaign('<%= id %>')
+    .done(function(data){
+      campaign = data;
+      console.log('Loading Rulesets');
+      outbound_api.getRulesets()
+        .done(function(data){ rulesets = data; view_campaign(campaign, rulesets); })
+        .fail(function(error){ console.error(error); });
+    })
+    .fail(function(error){ console.error(error); });
+}
+
+function view_campaign(campaign, rulesets)
+{
+  console.log("Displaying Campaign %s", data.id);
+  console.dir(campaign);
+  console.log("Available rule sets:");
+  console.dir(rulesets);
+  render_template({
+    campaign: campaign,
+    rulesets: rulesets,
+    selected: function() { return (campaign.ruleSets.indexOf(this.id) != -1) ? "selected" : ""; }
+  }, 'campaign_view', 'campaign_template');
+  $('#spinner-load').hide();
+  update_campaign.initialize();
+}
+
+function on_click_update_campaign(event)
+{
+  console.log("Update Click Event!");
+  update_campaign.processing();
+
+  // TODO: if the ruleset has not changed, do not update
+  var ruleset_ids = $('#Campaign_Rulesets').val() || [];
+
+  console.log("Selected ruleset ids:");
+  console.dir(ruleset_ids);
+
+  console.group("Building new rulesets");
+  var new_rulesets = ruleset_ids.map(function(id){
+    console.group("Building ruleset %s", id);
+    console.log("Fetching ruleset");
+    var pos     = rulesets.entities.map(function(entity) { return entity.id; }).indexOf(id);
+    // TODO: If not found ignore?!?
+    var ruleset = rulesets.entities[pos];
+    console.log("ruleset:");
+    console.dir(ruleset);
+
+    var ref = { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
+    console.log("Built:");
+    console.dir(ref);
+    console.groupEnd();
+    return ref;
+  });
+  console.groupEnd();
+
+  console.log("New rulesets:");
+  console.dir(new_rulesets);
+  console.log("Updating Campaign %s", campaign.id);
+  campaign.ruleSets = new_rulesets;
+  console.dir(campaign);
+  outbound_api.putCampaign(campaign.id, campaign)
+    .done(function(){
+      update_campaign.processed();
+      console.log("Successfully updated Campaign %s", campaign.id);
+    })
+    .fail(function(error){ console.error(error); });
+}
+</script>

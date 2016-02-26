@@ -13,28 +13,43 @@
             <li>Apply Rule sets</li>
             <li>Schedule calls</li>
         </ul>
-        <% if (token) { %>
-            <p><a class="btn btn-default" href="/campaigns">Campaigns &raquo;</a></p>
-        <% } else { %>
-          <p><a class="btn btn-warning disabled" href="/campaigns"><span class='glyphicon glyphicon-warning-sign'></span> Login! &raquo;</a></p>
-        <% } %>
+        <p><a class="btn btn-default logged_in" href="/Campaigns">
+          <span id="text_ok">Campaigns &raquo;</span>
+          <span id="text_ng"><span class='glyphicon glyphicon-warning-sign'></span> Login!</span>
+       </a></p>
     </div>
     <div class="col-md-4">
         <h2>Contact List</h2>
         <p>Manipulate Contact Lists.</p>
-        <% if (token) { %>
-            <p><a class="btn btn-default" href="/ContactLists">Contact Lists &raquo;</a></p>
-        <% } else { %>
-            <p><a class="btn btn-warning disabled" href="/ContactLists"><span class='glyphicon glyphicon-warning-sign'></span> Login! &raquo;</a></p>
-        <% } %>
+        <ul>
+            <li>Add Contact</li>
+            <li>Import Contacts (CSV)</li>
+            <li>Export Contacts (CSV)</li>
+            <li>Modify Contacts</li>
+        </ul>
+        <p><a class="btn btn-default logged_in" href="/ContactLists">
+          <span id="text_ok">Contact Lists &raquo;</span>
+          <span id="text_ng"><span class='glyphicon glyphicon-warning-sign'></span> Login!</span>
+       </a></p>
     </div>
     <div class="col-md-4">
         <h2>Skills</h2>
         <p>Bulk Load Skills.</p>
-        <% if (token) { %>
-            <p><a class="btn btn-default" href="/Skills">Skills &raquo;</a></p>
-        <% } else { %>
-            <p><a class="btn btn-warning disabled" href="/Skills"><span class='glyphicon glyphicon-warning-sign'></span> Login! &raquo;</a></p>
-        <% } %>
+        <ul>
+            <li>List Existing Skills</li>
+            <li>Add Skills <span class="label label-warning"><span class='glyphicon glyphicon-alert'></span> Requires API v2!</span></li>
+            <li>Import Skills (CSV) <span class="label label-warning"><span class='glyphicon glyphicon-alert'></span> Requires API v2!</span></li>
+            <li>Export Skills (CSV) <span class="label label-warning"><span class='glyphicon glyphicon-alert'></span> Requires API v2!</span></li>
+            <li>Assign Skills <span class="label label-warning"><span class='glyphicon glyphicon-alert'></span> Requires API v2!</span></li>
+        </ul>
+        <p><a class="btn btn-default logged_in" href="/Skills">
+          <span id="text_ok">Skills &raquo;</span>
+          <span id="text_ng"><span class='glyphicon glyphicon-warning-sign'></span> Login!</span>
+       </a></p>
     </div>
 </div>
+<script>
+function initialize_view()
+{
+}
+</script>
