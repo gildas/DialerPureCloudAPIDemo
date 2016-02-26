@@ -11,13 +11,12 @@
     <script language='javascript'>
       "use strict";
 
-      console.log("Declaring global variables");
       var purecloud_region  = '<%= settings.purecloud_region || "com" %>';
       var purecloud_session = null;
     </script>
   </head>
   <body>
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
           <a class="navbar-brand" href="#">
@@ -31,26 +30,26 @@
           </ul>
           <ul class="nav navbar-nav navbar-right">
             <li>
-              <p class="navbar-text logged_in">
-                <a id="text_ok" href="/users/me" class="navbar-link"><span id="user"></span>&nbsp;<span class="glyphicon glyphicon-user"></span></a>
-                <span id="text_ng">&nbsp;</span>
+              <p class="navbar-text">
+                <a id="current_user" href="/users/me" class="navbar-link"><span id="user"></span>&nbsp;<span class="glyphicon glyphicon-user"></span></a>
               </p>
             </li>
             <li>
-              <a id='login_form' href="javascript:login()" class="btn btn-primary btn-lg active"><span class="glyphicon glyphicon-log-in"></span> Login</a>
-              <a id='logout_form' href="javascript:logout()" class="navbar-link" style="display: none"><span class="glyphicon glyphicon-log-out"></span> Log off</a>
+              <button id="login_off" class="btn btn-primary active" data-login="Log in" data-logoff="Log off">
+                <span id="icon" class="glyphicon"></span>&nbsp;<span id="text">Log in</span>
+              </button>
             </li>
           </ul>
         </div>
       </div>
-    </div>
-
-    <div id="flash" class="alert alert-dismissible fade in">
-      <button type="button" class="close" data-dismiss="alert" arial-label="Close"><span arial-hidden="true">&times;</span></button>
-      <span id="text"></span>
-    </div>
+    </nav>
 
     <div class="container body-content">
+      <div id="flash" class="alert alert-dismissible fade in">
+        <button type="button" class="close" data-dismiss="alert" arial-label="Close"><span arial-hidden="true">&times;</span></button>
+        <span id="text"></span>
+      </div>
+
     <%- body %>
       <hr />
       <footer class="footer">
@@ -88,68 +87,75 @@
     <script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/bower_components/mustache.js/mustache.min.js"></script>
     <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
-
     <script src="/javascripts/statebutton.js"></script>
     <script src="/javascripts/helpers.js"></script>
     <script language='javascript'>
-      function login()
+      function login(event)
       {
-        console.log("Logging in to " + purecloud_session._host + '...');
+        console.log("Logging in mypurecloud." + purecloud_region + '...');
         console.log("PureCloud application id: <%= settings.application_id %>");
         console.log("PureCloud redirect URI: " + window.location.href);
         purecloud_session.authorize("<%= settings.application_id %>", window.location.href, null, 'mypurecloud.' + purecloud_region)
           .done(function(){
-            console.log('Logged in!');
-            new UsersApi(purecloud_session).getMe()
-              .done(function(user){
-                console.log('Logged in user: %s', user.id);
-                $.redirect('/login', { token: purecloud_session.getAuthToken(), user: JSON.stringify(user) });
-              });
+            console.log("PureCloud Token: %s", purecloud_session.getAuthToken());
+            console.log('a user is logged in, displaying logoff button!');
+              $('#login_off #icon').addClass('glyphicon-log-out');
+              $('#login_off #text').text($('#login_off').attr('data-logoff'));
+              $('#login_off').on('click', logoff);
+              $('.logged_in #text_ok').show();
+              $('.logged_in #text_ng').hide();
+              $('#login_off').show();
+              new UsersApi(purecloud_session).getMe()
+                .done(function(user){
+                  console.log('Logged in user: %s', user.id);
+                  console.dir(user);
+                  $('#current_user #user').text(user.displayName);
+                  $('#current_user').show();
+                  $.ajax({
+                    method: 'POST',
+                    url: '/login',
+                    data: {
+                      token: purecloud_session.getAuthToken(),
+                      user:  JSON.stringify(user),
+                    },
+                  })
+                  .done(function(){ console.log("Current user updated"); });
+                });
           });
       }
 
-      function logout()
+      function logoff(event)
       {
-        console.log("Logging out...");
+        console.log("Logging off...");
         purecloud_session.logout();
-        window.location.replace('/logout');
-      }
-
-      function enable_if_loggedin()
-      {
-        if (purecloud_session && purecloud_session.hasAuthorizationToken()) {
-          console.log("User is logged in");
-          $('.logged_in #text_ok #user').text('<%= current_user ? current_user.displayName : "" %>');
-          $('.logged_in #text_ok').show();
-          $('.logged_in #text_ng').hide();
-          $('.logged_in').removeClass('disabled');
-          $('#login_form').hide();
-          $('#logout_form').show();
-        } else {
-          console.log("User is NOT logged in");
-          $('.logged_in #text_ok #user').text("");
-          $('.logged_in #text_ok').hide();
-          $('.logged_in #text_ng').show();
-          $('.logged_in').addClass('disabled');
-          $('#login_form').show();
-          $('#logout_form').hide();
-        }
+        window.location.replace('/');
       }
 
       $(document).ready(function(){
         $('#flash').hide();
+        $('#current_user').hide();
+        $('#login_off').hide();
         purecloud_session = new PureCloudSession();
 
+        //purecloud_session.debug(true);
         <% if (purecloud_token) { %>
         console.log("Received token from Web Session: <%= purecloud_token %>");
         purecloud_session.setAuthToken("<%= purecloud_token %>");
-        // This will verify the token is good as well as setting the environment properly.
-        purecloud_session.authorize("<%= settings.application_id %>", window.location.href, null, 'mypurecloud.' + purecloud_region)
-          .done(function(){ console.log('Logged in!'); enable_if_loggedin(); });
         <% } %>
-
-        initialize_view();
-        enable_if_loggedin();
+        if (purecloud_session.hasAuthorizationToken())
+        {
+          // This will verify the token is good as well as setting the environment properly.
+          login();
+        }
+        else
+        {
+          console.log("PureCloud is not logged in, displaying login button");
+          $('#login_off #icon').addClass('glyphicon-log-in');
+          $('#login_off #text').text($('#login_off').attr('data-login'));
+          $('#login_off').on('click', login);
+          $('#login_off').show();
+        }
+        initialize_view(purecloud_session);
       });
     </script>
     <!-- SCRIPTS }}} -->
