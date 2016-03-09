@@ -11,7 +11,8 @@
     <script language='javascript'>
       "use strict";
 
-      var purecloud_region  = '<%= settings.purecloud_region || "com" %>';
+      var purecloud_org     = '<%= purecloud_org    %>';
+      var purecloud_region  = '<%= purecloud_region %>';
       var purecloud_session = null;
     </script>
   </head>
@@ -29,6 +30,11 @@
             <li><a href="/">Home</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            <li>
+              <p class="navbar-text">
+              <%= purecloud_org %> (<%= purecloud_region %>)
+              </p>
+            </li>
             <li>
               <p class="navbar-text">
                 <a id="current_user" href="/users/me" class="navbar-link"><span id="user"></span>&nbsp;<span class="glyphicon glyphicon-user"></span></a>
