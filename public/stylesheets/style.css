@@ -10,7 +10,7 @@ mark {
 }
 body {
   color: #ebebeb;
-  background-color: #2b3e50;
+  background-color: #0e5470;
 }
 a {
   color: #df691a;
@@ -20,7 +20,7 @@ a:focus {
   color: #df691a;
 }
 .img-thumbnail {
-  background-color: #2b3e50;
+  background-color: #0e5470;
 }
 h1 small,
 h2 small,
@@ -146,7 +146,7 @@ caption {
   color: #0585a7;
 }
 .table .table {
-  background-color: #2b3e50;
+  background-color: #0e5470;
 }
 .table-striped > tbody > tr:nth-of-type(odd) {
   background-color: #0585a7;
@@ -260,10 +260,10 @@ caption {
   background-color: #d43f3a;
 }
 output {
-  color: #2b3e50;
+  color: #0e5470;
 }
 .form-control {
-  color: #2b3e50;
+  color: #0e5470;
   background-color: #ffffff;
 }
 .form-control:focus {
@@ -656,7 +656,7 @@ fieldset[disabled] .btn-link:focus {
   background-color: #0585a7;
 }
 .dropdown-menu .divider {
-  background-color: #2b3e50;
+  background-color: #0e5470;
 }
 .dropdown-menu > li > a {
   color: #ebebeb;
@@ -675,18 +675,18 @@ fieldset[disabled] .btn-link:focus {
 .dropdown-menu > .disabled > a,
 .dropdown-menu > .disabled > a:hover,
 .dropdown-menu > .disabled > a:focus {
-  color: #2b3e50;
+  color: #0e5470;
 }
 .dropdown-menu > .disabled > a:hover,
 .dropdown-menu > .disabled > a:focus {
   background-color: transparent;
 }
 .dropdown-header {
-  color: #2b3e50;
+  color: #0e5470;
 }
 .input-group-addon {
   line-height: 1;
-  color: #2b3e50;
+  color: #0e5470;
   background-color: #0585a7;
 }
 .nav > li > a:hover,
@@ -718,7 +718,7 @@ fieldset[disabled] .btn-link:focus {
 .nav-tabs > li.active > a:hover,
 .nav-tabs > li.active > a:focus {
   color: #ebebeb;
-  background-color: #2b3e50;
+  background-color: #0e5470;
 }
 .nav-tabs.nav-justified > .active > a,
 .nav-tabs.nav-justified > .active > a:hover,
@@ -1075,7 +1075,7 @@ a.badge:focus {
   border-top-color: #39444e;
 }
 .thumbnail {
-  background-color: #2b3e50;
+  background-color: #0e5470;
   border: 1px solid #dddddd;
 }
 a.thumbnail:hover,
@@ -1592,7 +1592,7 @@ table > tfoot > tr > td,
 }
 input,
 textarea {
-  color: #2b3e50;
+  color: #0e5470;
 }
 .input-addon,
 .input-group-addon {
