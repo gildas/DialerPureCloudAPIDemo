@@ -69,8 +69,20 @@ In the root folder of the project, write a config.json file, like this:
 {
   "port": 3000,
   "purecloud": {
-    "region":      "AU",
-    "application": "6d963fda-34ee-2r00-9b43-97436acde4ff"
+    "organizations": [
+      {
+        "id": "ORG UUID",
+        "name": "My Australian Organization",
+        "region_id": "au",
+        "application": "APP UUID"
+      },
+      {
+        "id": "ORG UUID",
+        "name": "My US Organization",
+        "region_id": "us",
+        "application": "APP UUID"
+      }
+    ]
   }
 }
 ```
@@ -80,8 +92,9 @@ An example is provided in [config-sample.json](../blob/master/config-sample.json
 Notes:
 - To use the default values, you can omit the value in the JSON.
 - The default port is 3000
-- The default region is US
+- You can have as many organizations as you want.
 - Valid regions are: APAC, AU, EMEA, EU, IE, JP, US.
+- Provide the actual organization ID from your PureCloud Organization Settings (under: /directory/#/admin/general-info/details)
 - Provide the actual application ID from your [PureCloud OAUTH Settings](http://developer.mypurecloud.com/api/rest/authorization/).
 
 Run
@@ -144,11 +157,19 @@ heroku create
 ```sh
 git push heroku master
 ```
-6. Configure the instance with your PureCloud Region and Application Id:
+6. Configure the instance with the PureCloud organizations you want:
 ```sh
-heroku config:set PURECLOUD_REGION=AU
-heroku config:set PURECLOUD_APPLICATION=6d963fda-34ee-2r00-9b43-97436acde4ff
+heroku config:set PURECLOUD_ORGANIZATIONS="$(jq -cM '.purecloud.organizations' config.json)"
 ```
+The best is to use the JSON file you created while testing locally (or to write one) and to process it with [jq](https://stedolan.github.io/jq) under Mac or Linux to get a compact string.  
+
+On Windows, using PowerShell 3.0+, one could write:  
+
+```posh
+heroku config:set PURECLOUD_ORGANIZATIONS=((Get-Content config.json) -join "`n" | ConvertFrom-Json | Select purecloud | select organizations | ConvertTo-Json -Compress)
+```
+(_To be tested!_)
+
 7. Make sure the instance is running
 ```sh
 heroku ps:scale web=1

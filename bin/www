@@ -15,17 +15,13 @@ var gitrev = require('git-rev');
 // Retrieve the configuration
 //  Order: CLI, Environment, config file, defaults.
 config.argv({
-  'purecloud:region': {
-    alias: 'region',
-    describe: 'To connect to PureCloud in a given region (au, ie, jp, us)'
+  'purecloud:regions': {
+    alias: 'regions',
+    describe: 'Available regions'
   },
-  'purecloud:organization': {
-    alias: [ 'organization', 'org' ],
-    describe: 'The Organization name to connect to'
-  },
-  'purecloud:application': {
-    alias: [ 'application', 'application_id', 'app_id', 'client_id', 'id' ],
-    describe: 'The Application ID to be sent to PureCloud OAUTH (overrides organization)'
+  'purecloud:organizations': {
+    alias: [ 'organizations', 'orgs' ],
+    describe: 'The Organizations to connect to'
   },
   'port': {
     alias: 'p',
@@ -40,8 +36,6 @@ config.argv({
 .defaults({
   port: 3000,
   purecloud: {
-    region: 'us',
-    application: 'PLEASE PROVIDE',
     regions: [
       { id: 'au', name: 'Australia', suffix: 'com.au' },
       { id: 'ie', name: 'Ireland',   suffix: 'ie' },
@@ -67,47 +61,32 @@ app.set('port', port);
 console.log('Listening on port: ' + port);
 
 /**
- * Get PureCloud Application Id and store in Express.
- */
-var organizations     = config.get('purecloud:organizations');
-var organization_name = config.get('purecloud:organization');
-var organization      = undefined;
-var application_id    = undefined;
-
-config.get('purecloud:organizations').forEach(function(org) {
-  console.log("Organization: %s (%s) in %s", org.name, org.id, org.region);
-});
-if (organization_name != undefined) {
-  console.log("Loading Organization: %s", organization_name);
-  organization = organizations.find(function(item) { return item.name.toLowerCase() === organization_name.toLowerCase(); });
-  if (organization != undefined) {
-    console.log("Loading Application ID from organization %s", organization.name);
-    application_id = organization.application;
-    app.set('organization_id', organization.id);
-    app.set('organization_name', organization.name);
-  } else {
-    application_id = config.get('purecloud:application');
-  }
-} else {
-  application_id = config.get('purecloud:application');
-}
-if (application_id) {
-  console.log('Using PureCloud Application ID: ' + application_id);
-  app.set('application_id', application_id);
-} else {
-  console.error('Undefined Purecloud Application ID');
-//  exit
-}
-
-/**
  * Get PureCloud Region and store in Express.
  */
-var regions   = config.get('purecloud:regions');
-var region_id = (organization != undefined) ? organization.region : config.get('purecloud:region').toLowerCase() || 'us';
-var region    = regions.find(function(item) { return item.id === region_id; });
+var regions = config.get('purecloud:regions');
 
-console.log('Will connect to: mypurecloud.' + region.suffix + ' (' + region.name + ')');
-app.set('purecloud_region', region.suffix);
+console.log("Loaded regions: ", regions);
+if (!(regions instanceof Array)) {
+  regions = JSON.parse(regions);
+  console.log("Parsed regions: ", regions);
+}
+app.set('purecloud_regions', regions);
+
+/**
+ * Get PureCloud Applications and store them in Express.
+ */
+var organizations = config.get('purecloud:organizations');
+
+console.log("Loaded organizations: ", organizations);
+if (!(organizations instanceof Array)) {
+  organizations = JSON.parse(organizations);
+  console.log("Parsed organizations: ", organizations);
+}
+organizations.forEach(function(organization){
+  organization['region'] = regions.find(function(region) { return region.id === organization.region_id; });
+});
+app.set('organizations', organizations);
+console.log("Updated organizations: ", organizations);
 
 /**
  * Create HTTP server.
