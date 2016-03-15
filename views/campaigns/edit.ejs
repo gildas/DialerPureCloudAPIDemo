@@ -89,7 +89,10 @@ function view_campaign(campaign, rulesets)
   render_template({
     campaign: campaign,
     rulesets: rulesets,
-    selected: function() { return (campaign.ruleSets.indexOf(this.id) != -1) ? "selected" : ""; }
+    selected: function() {
+      var ruleset_id = this.id;
+      return campaign.ruleSets.some(function(ruleset){ return ruleset.id === ruleset_id; }) ? 'selected' : '';
+    }
   }, 'campaign_view', 'campaign_template');
   $('#spinner-load').hide();
   update_campaign.initialize();
