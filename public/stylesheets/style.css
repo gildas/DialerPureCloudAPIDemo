@@ -1573,6 +1573,10 @@ button.list-group-item-danger.active:focus {
 .page-header {
   border-bottom-color: #0585a7;
 }
+table a:not(.btn),
+.table a:not(.btn) {
+  color: #000000;
+}
 table .text-muted,
 .table .text-muted {
   color: #0585a7;
