@@ -44,9 +44,8 @@ function previous_page()
 
 function view_skills(data)
 {
-  console.log("Displaying %d Skills", data.total);
-  console.dir(data);
   skills = data;
+  console.log("Displaying %d Skills %O", skills.total, skills);
   render_template(data, 'skills_view', 'skills_template');
   $('#spinner-load').hide();
 }

@@ -69,8 +69,7 @@ function previous_page()
 
 function view_campaigns(campaigns)
 {
-  console.log("Displaying %d Campaigns", campaigns.total);
-  console.dir(campaigns);
+  console.log("Displaying %d Campaigns %O", campaigns.total, campaigns);
   render_template(campaigns, 'campaigns_view', 'campaigns_template');
   $('#spinner-load').hide();
   $('a.show_campaign').on('click', on_click_campaign);
@@ -108,8 +107,7 @@ function on_click_schedule_call(event)
   console.log("Fetching Schedules for campaign %s", campaign.id);
   outbound_api.getSchedulesCampaign(campaign_id)
     .done(function(data){
-      console.log("Current Schedule:")
-      console.dir(data);
+      console.log("Current Schedule: %O", data)
 
       var start_time = new Date();
 
@@ -129,8 +127,7 @@ function on_click_schedule_call(event)
       outbound_api.putSchedulesCampaign(campaign_id, data)
         .done(function(data){
           schedule_call.processed();
-          console.log("scheduled!")
-          console.dir(data);
+          console.log("scheduled! %O", data)
         })
         .fail(function(error){ console.error(error); });
     })

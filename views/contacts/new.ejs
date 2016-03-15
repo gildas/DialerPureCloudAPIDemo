@@ -49,9 +49,8 @@ function initialize_view()
 
 function view_contact(data)
 {
-  console.log("Displaying new Contact in ContactList ", data.id);
-  console.dir(data);
   contactlist = data;
+  console.log("Displaying new Contact in ContactList $s %O", contactlist.id, contactlist);
 
   // Unfortunately, columns can have names that cannot be fetched easily
   // by jQuery once they are used as DOM ids
@@ -65,7 +64,7 @@ function view_contact(data)
                      }
                    })
   };
-  console.dir(blob);
+  console.log("Blob: %O", blob);
   render_template(blob, 'contact_view', 'contact_template');
   create_contact.initialize();
   $('#spinner-load').hide();
@@ -93,7 +92,7 @@ function on_click_create_contact(event)
 
     contact.data[column] = $('#' + column.replace( /([\/ \.\?])/g, "_")).val();
   });
-  console.dir(contact);
+  console.log("Contact: %O", contact);
   outbound_api.postContactlistContacts(contactlist.id, [ contact ], priority)
     .done(function(){
     console.log("Successfuly added!");
