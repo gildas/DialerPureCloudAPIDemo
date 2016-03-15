@@ -42,9 +42,8 @@ function previous_page()
 
 function view_contactlists(data)
 {
-  console.log("Displaying %d ContactLists", data.total);
-  console.dir(data);
   contactlists = data;
+  console.log("Displaying %d ContactLists %O", contactlists.total, contactlists);
   render_template(contactlists, 'contactlists_view', 'contactlists_template');
   $('#spinner-load').hide();
 }

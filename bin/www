@@ -15,13 +15,13 @@ var gitrev = require('git-rev');
 // Retrieve the configuration
 //  Order: CLI, Environment, config file, defaults.
 config.argv({
-  'purecloud:region': {
-    alias: 'region',
-    describe: 'To connect to PureCloud in a given region (EU, EMEA, APAC, AU, JP, US)'
+  'purecloud:regions': {
+    alias: 'regions',
+    describe: 'Available regions'
   },
-  'purecloud:application': {
-    alias: [ 'application', 'application_id', 'app_id', 'client_id', 'id' ],
-    describe: 'The Application ID to be sent to PureCloud OAUTH'
+  'purecloud:organizations': {
+    alias: [ 'organizations', 'orgs' ],
+    describe: 'The Organizations to connect to'
   },
   'port': {
     alias: 'p',
@@ -36,15 +36,16 @@ config.argv({
 .defaults({
   port: 3000,
   purecloud: {
-    region: 'US',
-    application: 'PLEASE PROVIDE'
+    regions: [
+      { id: 'au', name: 'Australia', suffix: 'com.au' },
+      { id: 'ie', name: 'Ireland',   suffix: 'ie' },
+      { id: 'jp', name: 'Japan',     suffix: 'jp' },
+      { id: 'us', name: 'US',        suffix: 'com' }
+    ],
+    "organizations": [
+    ]
   }
 });
-
-console.log("Version: %s", package_info.version);
-gitrev.short(function(value)  { console.log('Git commit: ' + value); });
-gitrev.branch(function(value) { console.log('Git branch: ' + value); });
-gitrev.tag(function(value)    { console.log('Git tag: '    + value); });
 
 /**
  * Get port and store in Express.
@@ -55,21 +56,43 @@ app.set('port', port);
 console.log('Listening on port: ' + port);
 
 /**
- * Get PureCloud Application Id and store in Express.
- */
-
-app.set('application_id', config.get('purecloud:application'));
-console.log('Using PureCloud Client ID: ' + app.get('application_id'));
-
-/**
  * Get PureCloud Region and store in Express.
  */
-var regions        = { APAC: 'com.au', AU: 'com.au', EMEA: 'ie', EU: 'ie', IE: 'ie', JP: 'jp', US: 'com' };
-var region_default = 'US';
-var region_name    = config.get('purecloud:region').toUpperCase();
+var regions = config.get('purecloud:regions');
 
-app.set('purecloud_region', regions[region_name] ? regions[region_name] : regions[region_default]);
-console.log('Will connect to: mypurecloud.' + app.get('purecloud_region') + ' (' + region_name + ')');
+console.log("Loaded regions: ", regions);
+if (!(regions instanceof Array)) {
+  regions = JSON.parse(regions);
+  console.log("Parsed regions: ", regions);
+}
+app.set('purecloud_regions', regions);
+
+/**
+ * Get PureCloud Applications and store them in Express.
+ */
+var organizations = config.get('purecloud:organizations');
+
+console.log("Loaded organizations: ", organizations);
+if (!(organizations instanceof Array)) {
+  organizations = JSON.parse(organizations);
+  console.log("Parsed organizations: ", organizations);
+}
+organizations.forEach(function(organization){
+  organization['region'] = regions.find(function(region) { return region.id === organization.region_id; });
+});
+app.set('organizations', organizations);
+console.log("Updated organizations: ", organizations);
+
+/**
+ * Environment and git information
+ */
+
+
+console.log("Environment: %s", app.get('env'));
+console.log("Version: %s", package_info.version);
+gitrev.short(function(value)  { console.log('Git commit: ' + value); });
+gitrev.branch(function(value) { console.log('Git branch: ' + value); });
+gitrev.tag(function(value)    { console.log('Git tag: '    + value); });
 
 /**
  * Create HTTP server.

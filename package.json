@@ -1,6 +1,6 @@
 {
   "name": "DialerPureCloudAPIDemo",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "a Dialer PureCloud API demo",
   "private": true,
   "scripts": {

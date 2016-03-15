@@ -39,8 +39,7 @@ function initialize_view()
 function view_contacts(data)
 {
   contactlist = data;
-  console.log("Displaying Contacts in ContactList ", data.id);
-  console.dir(data);
+  console.log("Displaying Contacts in ContactList %s %O", contactlist.id, contactlist);
 
   render_template(data, 'contacts_view', 'contacts_template');
   for (contact_id=1; contact_id <= data.size; contact_id++)
@@ -52,16 +51,14 @@ function view_contacts(data)
     RestRequest('GET', '/outbound/contactlists/' + contactlist.id + '/contacts/' + contact_id, 5, 5000)
       .done(view_contact)
       .fail(function(jqXHR, status){
-          console.error("Error %s to fetch contact %s", status, contact_id);
-          console.dir(jqXHR);
+          console.error("Error %s to fetch contact %s, jqXHR=%O", status, contact_id, jqXHR);
       });
   }
 }
 
 function view_contact(data)
 {
-  console.log("Displaying Contact ", data.id);
-  console.dir(data);
+  console.log("Displaying Contact %s %O", data.id, data);
 
   contacts[data.id] = data;
   $('#contact_view_' + data.id)
@@ -100,7 +97,6 @@ function on_click_delete(event)
 
   // Prevent link from firing up
   event.preventDefault();
-  console.dir(event);
 
   console.log("deleting contact: %s", event.data);
 }

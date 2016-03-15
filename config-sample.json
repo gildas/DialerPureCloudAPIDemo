@@ -1,7 +1,19 @@
 {
   "port": 3000,
   "purecloud": {
-    "region":      "US",
-    "application": "UUID from PureCloud OAUTH"
+    "organizations": [
+      {
+        "id": "ORG UUID",
+        "name": "My Australian Organization",
+        "region_id": "au",
+        "application": "APP UUID"
+      },
+      {
+        "id": "ORG UUID",
+        "name": "My US Organization",
+        "region_id": "us",
+        "application": "APP UUID"
+      }
+    ]
   }
 }

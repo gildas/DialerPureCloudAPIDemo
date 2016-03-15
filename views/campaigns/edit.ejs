@@ -84,14 +84,15 @@ function initialize_view()
 
 function view_campaign(campaign, rulesets)
 {
-  console.log("Displaying Campaign %s", data.id);
-  console.dir(campaign);
-  console.log("Available rule sets:");
-  console.dir(rulesets);
+  console.log("Displaying Campaign %s %O", campaign.id, campaign);
+  console.log("Available rule sets: %O", rulesets);
   render_template({
     campaign: campaign,
     rulesets: rulesets,
-    selected: function() { return (campaign.ruleSets.indexOf(this.id) != -1) ? "selected" : ""; }
+    selected: function() {
+      var ruleset_id = this.id;
+      return campaign.ruleSets.some(function(ruleset){ return ruleset.id === ruleset_id; }) ? 'selected' : '';
+    }
   }, 'campaign_view', 'campaign_template');
   $('#spinner-load').hide();
   update_campaign.initialize();
@@ -105,8 +106,7 @@ function on_click_update_campaign(event)
   // TODO: if the ruleset has not changed, do not update
   var ruleset_ids = $('#Campaign_Rulesets').val() || [];
 
-  console.log("Selected ruleset ids:");
-  console.dir(ruleset_ids);
+  console.log("Selected ruleset ids: %O", ruleset_ids);
 
   console.group("Building new rulesets");
   var new_rulesets = ruleset_ids.map(function(id){
@@ -115,22 +115,18 @@ function on_click_update_campaign(event)
     var pos     = rulesets.entities.map(function(entity) { return entity.id; }).indexOf(id);
     // TODO: If not found ignore?!?
     var ruleset = rulesets.entities[pos];
-    console.log("ruleset:");
-    console.dir(ruleset);
+    console.log("ruleset: %O", ruleset);
 
     var ref = { id: ruleset.id, name: ruleset.name, selfUri: ruleset.selfUri };
-    console.log("Built:");
-    console.dir(ref);
+    console.log("Built: %O", ref);
     console.groupEnd();
     return ref;
   });
   console.groupEnd();
 
-  console.log("New rulesets:");
-  console.dir(new_rulesets);
-  console.log("Updating Campaign %s", campaign.id);
+  console.log("New rulesets: %O", new_rulesets);
   campaign.ruleSets = new_rulesets;
-  console.dir(campaign);
+  console.log("Updating Campaign %s %O", campaign.id, campaign);
   outbound_api.putCampaign(campaign.id, campaign)
     .done(function(){
       update_campaign.processed();
