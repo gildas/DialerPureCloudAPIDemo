@@ -84,10 +84,8 @@ function initialize_view()
 
 function view_campaign(campaign, rulesets)
 {
-  console.log("Displaying Campaign %s", data.id);
-  console.dir(campaign);
-  console.log("Available rule sets:");
-  console.dir(rulesets);
+  console.log("Displaying Campaign %s %O", campaign.id, campaign);
+  console.log("Available rule sets: %O", rulesets);
   render_template({
     campaign: campaign,
     rulesets: rulesets,
