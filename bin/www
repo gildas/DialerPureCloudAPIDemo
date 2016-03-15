@@ -47,11 +47,6 @@ config.argv({
   }
 });
 
-console.log("Version: %s", package_info.version);
-gitrev.short(function(value)  { console.log('Git commit: ' + value); });
-gitrev.branch(function(value) { console.log('Git branch: ' + value); });
-gitrev.tag(function(value)    { console.log('Git tag: '    + value); });
-
 /**
  * Get port and store in Express.
  */
@@ -87,6 +82,17 @@ organizations.forEach(function(organization){
 });
 app.set('organizations', organizations);
 console.log("Updated organizations: ", organizations);
+
+/**
+ * Environment and git information
+ */
+
+
+console.log("Environment: %s", app.get('env'));
+console.log("Version: %s", package_info.version);
+gitrev.short(function(value)  { console.log('Git commit: ' + value); });
+gitrev.branch(function(value) { console.log('Git branch: ' + value); });
+gitrev.tag(function(value)    { console.log('Git tag: '    + value); });
 
 /**
  * Create HTTP server.

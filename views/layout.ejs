@@ -5,9 +5,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
+<% if (settings.env === 'development') { %>
+    <link rel='stylesheet' href='/bower_components/bootswatch-dist/css/bootstrap.css' />
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css">
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+<% } else { %>
     <link rel='stylesheet' href='/bower_components/bootswatch-dist/css/bootstrap.min.css' />
     <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css">
     <link rel='stylesheet' href='/stylesheets/style.css' />
+<% } %>
     <script language='javascript'>
       "use strict";
 
@@ -92,6 +98,16 @@
       </footer>
     </div>
     <!-- SCRIPTS  {{{ -->
+<% if (settings.env === 'development') { %>
+    <script src="/bower_components/jquery/dist/jquery.js"></script>
+    <script src="/bower_components/jquery.redirect/jquery.redirect.js"></script>
+    <script src="/bower_components/js-cookie/src/js.cookie.js"></script>
+    <script src="/bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="/bower_components/mustache.js/mustache.js"></script>
+    <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
+    <script src="/javascripts/statebutton.js"></script>
+    <script src="/javascripts/helpers.js"></script>
+<% } else { %>
     <script src="/bower_components/jquery/dist/jquery.min.js"></script>
     <script src="/bower_components/jquery.redirect/jquery.redirect.js"></script>
     <script src="/bower_components/js-cookie/src/js.cookie.js"></script>
@@ -100,6 +116,7 @@
     <script src="/bower_components/PureCloud/dist/purecloud-api.js"></script>
     <script src="/javascripts/statebutton.js"></script>
     <script src="/javascripts/helpers.js"></script>
+<% } %>
     <script language='javascript'>
       function login(event, region_suffix, organization_id, application_id)
       {
