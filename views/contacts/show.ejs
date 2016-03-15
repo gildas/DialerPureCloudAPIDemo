@@ -42,19 +42,20 @@ function initialize_view()
 
 function view_contact(data)
 {
+  contact = data;
   console.log("Displaying Contact %s %O", contact.id, contact);
 
   // Unfortunately, columns can have names that cannot be fetched easily
   // by jQuery once they are used as DOM ids
   console.log("Create object with safe ids")
   var blob = {
-    id:             data.id,
-    contactlist_id: data.contactListId,
+    id:             contact.id,
+    contactlist_id: contact.contactListId,
     columns:        contactlist.columnNames.map(function(column){
                       return {
                         id:    column.replace( /([\/ \.\?])/g, "_"),
                         name:  column,
-                        value: data.data[column]
+                        value: contact.data[column]
                       }
                     })
   };

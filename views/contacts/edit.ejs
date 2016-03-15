@@ -1,0 +1,101 @@
+<% layout('../layout') -%>
+
+<h2>Details &nbsp;<i id="spinner-load" class="fa fa-refresh fa-spin" style="font-size:24px"></i></h2>
+
+<div id="contact_view"></div>
+
+<div>
+  <a href="/ContactLists/<%= contactlist_id %>">Back to List</a>
+</div>
+
+<script id="contact_template" type="text/template">
+<h4>New Contact in ContactList: {{contactlist.name}}</h4>
+<hr/>
+<div class="form-horizontal">
+  <input id="contactlist_id" name="contactlist_id" type="hidden" value="{{contactlist.id}}"/>
+
+  {{#columns}}
+  <div class="form-group">
+    <label class="control-label col-md-2" for="{{id}}">{{name}}</label>
+    <input type="text" id="{{id}}" value="{{value}}"/>
+  </div>
+  {{/columns}}
+
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md10">
+      <button id="update_contact" class="btn btn-default" rel="{{id}}" data-processing-text="Updating..." data-processed-text="Updated">
+        <span id="text">Update</span>&nbsp;&nbsp;<i id="spinner" class="fa fa-refresh fa-spin" style="font-size:18px"></i>
+      </button>
+    </div>
+  </div>
+</div>
+</script>
+
+<script>
+var outbound_api;
+var contactlist;
+var contact;
+var update_contact;
+
+function initialize_view()
+{
+  outbound_api   = new OutboundApi(purecloud_session);
+  update_contact = new StateButton('update_contact', on_click_update_contact);
+
+  console.log('Loading ContactList <%= contactlist_id %>');
+  outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
+    .done(function(data) {
+      contactlist = data;
+      console.log('Loading Contact <%= id %>');
+      outbound_api.getContactlistContact('<%= contactlist_id %>', '<%= id %>')
+        .done(view_contact)
+        .fail(function(error){ console.error(error); });
+    })
+    .fail(function(error){ console.error(error); });
+}
+
+function view_contact(data)
+{
+  contact = data;
+  console.log("Displaying new Contact %O", contact);
+
+  // Unfortunately, columns can have names that cannot be fetched easily
+  // by jQuery once they are used as DOM ids
+  console.log("Create object with safe ids")
+  var blob = {
+    id:             contact.id,
+    contactlist_id: contact.contactListId,
+    columns:        contactlist.columnNames.map(function(column){
+                      return {
+                        id:   column.replace( /([\/ \.\?])/g, "_"),
+                        name:  column,
+                        value: data.data[column]
+                      }
+                    })
+  };
+  console.log("Blob: %O", blob);
+  render_template(blob, 'contact_view', 'contact_template');
+  update_contact.initialize();
+  $('#spinner-load').hide();
+}
+
+function on_click_update_contact(event)
+{
+  console.log("Update Click Event!");
+  update_contact.processing();
+
+  console.log("Updating Contact with blob");
+  contactlist.columnNames.forEach(function(column){
+    contact.data[column] = $('#' + column.replace( /([\/ \.\?])/g, "_")).val();
+  });
+  console.log("Updating Contact: %O", contact);
+  outbound_api.putContactlistContact(contactlist.id, contact.id, contact)
+    .done(function(){
+    console.log("Successfuly added!");
+    update_contact.processed();
+    setTimeout(function(){ window.location.href = '/ContactLists/' + contactlist.id; }, 1000);
+    })
+    .fail(function(error){ console.error(error); });
+}
+
+</script>
