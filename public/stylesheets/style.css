@@ -659,11 +659,11 @@ fieldset[disabled] .btn-link:focus {
   background-color: #ffffff;
 }
 .dropdown-menu > li > a {
-  color: #000000;
+  color: #ebebeb;
 }
 .dropdown-menu > li > a:hover,
 .dropdown-menu > li > a:focus {
-  color: #000000;
+  color: #ebebeb;
   background-color: #485563;
 }
 .dropdown-menu > .active > a,
