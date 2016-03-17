@@ -10,10 +10,11 @@ function render_error(error){
   $('#flash').show();
 };
 
-function RestRequest(method, path, max_tries, timeout, body) {
+function RestRequest(method, path, max_tries, timeout, api_version, body) {
+  api_version = (typeof api_version === 'undefined') ? 1 : api_version;
   return $.ajax({
     method: method,
-    url: 'https://api.mypurecloud.' + purecloud_region + '/api/v1' + path,
+    url: 'https://api.mypurecloud.' + purecloud_region + '/api/v' + api_version + path,
     headers: {
       'Accept':       'application/json',
       'Content-Type': 'application/json',

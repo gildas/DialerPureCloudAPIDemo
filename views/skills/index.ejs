@@ -4,6 +4,7 @@
 
 <div class="row">
   <div id="skills_view" class="col-md-4"></div>
+  <div id="skill_view" class="col-md-4"></div>
 </div>
 
 <script id="skills_template" type="text/template">
@@ -12,11 +13,28 @@
   <tr><th>Skill Name</th></tr>
   {{#entities}}
   <!-- <tr><td><a href="/skills/{{id}}" >{{name}}</a></td></tr> -->
-  <tr><td>{{name}}</td></tr>
+  <tr><td><a class="show_skill" href="#" rel="{{id}}">{{name}}</a></td></tr>
   {{/entities}}
 </table>
 <button class="btn btn-default" onClick="javascript:previous_page()">&lt;</button>
 <button class="btn btn-default" onClick="javascript:next_page()">&gt;</button>
+</script>
+
+<script id="skill_template" type="text/template">
+<h4>Details</h4>
+<table class="table">
+  <tr><td>Name    </td><td>{{name}}</td></tr>
+  <tr><td>Status  </td><td>{{state}}</td></tr>
+  <tr><td>Users   </td><td>{{name}}</td></tr>
+</table>
+<div class="row">
+  <div class="col-md-2">
+<a id="edit_skill" class="btn btn-default" href="/skills/{{id}}/edit" alt="Edit" data-toggle="tooltip" title="Edit"><span class='glyphicon glyphicon-edit'></span> &raquo;</a>
+  </div>
+  <div class="col-md-2">
+<a id="edit_skill" class="btn btn-default" href="#" alt="Delete" data-toggle="tooltip" title="Delete"><span class='glyphicon glyphicon-trash'></span> &raquo;</a>
+  </div>
+</div>
 </script>
 
 <script>
@@ -48,5 +66,26 @@ function view_skills(data)
   console.log("Displaying %d Skills %O", skills.total, skills);
   render_template(data, 'skills_view', 'skills_template');
   $('#spinner-load').hide();
+  $('a.show_skill').on('click', on_click_skill);
 }
+
+function on_click_skill(event)
+{
+  console.log("Skill Click Event!");
+
+  // Prevent link from firing up
+  event.preventDefault();
+
+  view_skill($(this).attr('rel'));
+}
+
+function view_skill(id)
+{
+  console.log("Fetching Skill " + id);
+  var pos = skills.entities.map(function(element) { return element.id; }).indexOf(id);
+
+  console.log("pos=" + pos);
+  render_template(skills.entities[pos], 'skill_view', 'skill_template');
+}
+
 </script>

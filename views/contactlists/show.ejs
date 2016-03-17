@@ -276,7 +276,7 @@ function on_click_update_contacts(event)
           console.log("Match (%s)!", column_update_value);
           data.data[column_update_name] = column_update_value;
           //outbound_api.putContactlistContact(data.contactListId, data.id, data)
-          RestRequest('PUT', '/outbound/contactlists/' + contactlist.id + '/contacts/' + data.id, 5, 5000, data)
+          RestRequest('PUT', '/outbound/contactlists/' + contactlist.id + '/contacts/' + data.id, 5, 5000, 1, data)
             .done(function(data){
               console.log("Success! %O", data);
               $('#update_contacts_updated_count').html(function(id,value) { return +value+1; });
