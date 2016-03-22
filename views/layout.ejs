@@ -123,6 +123,7 @@
         if (event) { event.preventDefault(); }
         console.group('Logging in...');
         organization_id   = organization_id || $(this).attr('data-orgid');
+        organization_name = $(this).text()  || organization_id;
         region_suffix     = region_suffix   || $(this).attr('data-region_suffix');
         application_id    = application_id  || $(this).attr('data-appid');
         Cookies.set('PureCloud_region',          region_suffix);
