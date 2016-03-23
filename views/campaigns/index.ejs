@@ -105,7 +105,7 @@ function on_click_schedule_call(event)
   var campaign    = campaigns.entities[pos];
 
   console.log("Fetching Schedules for campaign %s", campaign.id);
-  outbound_api.getSchedulesCampaign(campaign_id)
+  outbound_api.getSchedulesCampaignsCampaignId(campaign_id)
     .done(function(data){
       console.log("Current Schedule: %O", data)
 
@@ -124,7 +124,7 @@ function on_click_schedule_call(event)
         start: start_time.toISOString(),
         end:   end_time.toISOString(),
       });
-      outbound_api.putSchedulesCampaign(campaign_id, data)
+      outbound_api.putSchedulesCampaignsCampaignId(campaign_id, data)
         .done(function(data){
           schedule_call.processed();
           console.log("scheduled! %O", data)

@@ -71,7 +71,7 @@ function initialize_view()
   update_campaign = new StateButton('update_campaign', on_click_update_campaign);
 
   console.log('Loading Campaign <%= id %>');
-  outbound_api.getCampaign('<%= id %>')
+  outbound_api.getCampaignsCampaignId('<%= id %>')
     .done(function(data){
       campaign = data;
       console.log('Loading Rulesets');
@@ -127,7 +127,7 @@ function on_click_update_campaign(event)
   console.log("New rulesets: %O", new_rulesets);
   campaign.ruleSets = new_rulesets;
   console.log("Updating Campaign %s %O", campaign.id, campaign);
-  outbound_api.putCampaign(campaign.id, campaign)
+  outbound_api.putCampaignsCampaignId(campaign.id, campaign)
     .done(function(){
       update_campaign.processed();
       console.log("Successfully updated Campaign %s", campaign.id);

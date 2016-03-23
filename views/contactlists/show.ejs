@@ -94,7 +94,7 @@ function initialize_view()
   export_contacts   = new StateButton('export_contacts', on_click_export_contacts);
 
   console.log('Loading ContactList <%= id %>');
-  outbound_api.getContactlist('<%= id %>', true, true, true)
+  outbound_api.getContactlistsContactlistId('<%= id %>', true, true, true)
     .done(view_contactlist)
     .fail(function(error){ console.error(error); });
 }
@@ -172,10 +172,10 @@ function on_click_export_contacts(event)
       websocket.onopen = function(){
         console.log("WebSocket communicating with %s", websocket.url);
         // When the WebSocket is opened, subscribe to all topics we want (here 1 only)
-        notifications_api.postChannelSubscriptions(channel_data.id, [{ id: export_topic_id }])
+        notifications_api.postChannelsChannelIdSubscriptions(channel_data.id, [{ id: export_topic_id }])
           .done(function(subscription_data){
             // When we have subscribed, start the Contacts export
-            outbound_api.postContactlistExport(contactlist_id)
+            outbound_api.postContactlistsContactlistIdExport(contactlist_id)
               .done(function(export_data){
                 console.log("Exporting Contact List %s %O", export_data.id, export_data);
               })
@@ -266,7 +266,7 @@ function on_click_update_contacts(event)
   max_tries = 5;
   for (contact_id=1; contact_id <= contactlist.size; contact_id++)
   {
-    //outbound_api.getContactlistContact(contactlist.id, contact_id)
+    //outbound_api.getContactlistsContactlistIdContactsContactId(contactlist.id, contact_id)
     RestRequest('GET', '/outbound/contactlists/' + contactlist.id + '/contacts/' + contact_id, 5, 5000)
       .done(function(data) {
         var contact_search_value = data.data[column_search_name];
@@ -275,7 +275,7 @@ function on_click_update_contacts(event)
         {
           console.log("Match (%s)!", column_update_value);
           data.data[column_update_name] = column_update_value;
-          //outbound_api.putContactlistContact(data.contactListId, data.id, data)
+          //outbound_api.putContactlistsContactlistIdContactsContactId(data.contactListId, data.id, data)
           RestRequest('PUT', '/outbound/contactlists/' + contactlist.id + '/contacts/' + data.id, 5, 5000, 1, data)
             .done(function(data){
               console.log("Success! %O", data);

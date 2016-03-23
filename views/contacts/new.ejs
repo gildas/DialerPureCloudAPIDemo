@@ -42,7 +42,7 @@ function initialize_view()
   create_contact = new StateButton('create_contact', on_click_create_contact);
 
   console.log('Loading ContactList <%= contactlist_id %>');
-  outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
+  outbound_api.getContactlistsContactlistId('<%= contactlist_id %>', true, true, true)
     .done(view_contact)
     .fail(function(error){ console.error(error); });
 }
@@ -93,7 +93,7 @@ function on_click_create_contact(event)
     contact.data[column] = $('#' + column.replace( /([\/ \.\?])/g, "_")).val();
   });
   console.log("Contact: %O", contact);
-  outbound_api.postContactlistContacts(contactlist.id, [ contact ], priority)
+  outbound_api.postContactlistsContactlistIdContacts(contactlist.id, [ contact ], priority)
     .done(function(){
     console.log("Successfuly added!");
     create_contact.processed();
