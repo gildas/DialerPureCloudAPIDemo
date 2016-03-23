@@ -31,7 +31,7 @@ function initialize_view()
   contacts     = [];
 
   console.log('Loading ContactList <%= contactlist_id %>');
-  outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
+  outbound_api.getContactlistsContactlistId('<%= contactlist_id %>', true, true, true)
     .done(view_contacts)
     .fail(function(error){ console.error(error); });
 }
@@ -47,7 +47,7 @@ function view_contacts(data)
     $('#contacts_view table tbody:last-child')
       .append('<tr id= "contact_view_' + contact_id + '"><td>' + contact_id + '</td></tr>');
 
-    //outbound_api.getContactlistContact(contactlist.id, contact_id)
+    //outbound_api.getContactlistsContactlistIdContactsContactId(contactlist.id, contact_id)
     RestRequest('GET', '/outbound/contactlists/' + contactlist.id + '/contacts/' + contact_id, 5, 5000)
       .done(view_contact)
       .fail(function(jqXHR, status){
@@ -84,7 +84,7 @@ function view_contact(data)
         )
       )
     );
-  $('#contact_delete_' + data.id).on('click', null, data.id, on_click_delete);
+  $('#contact_delete_' + data.id).on('click', null, { contactListId: data.contactListId, id: data.id }, on_click_delete);
   if (contacts.size == contactlist.total)
   {
     $('#spinner-load').hide();
@@ -98,6 +98,9 @@ function on_click_delete(event)
   // Prevent link from firing up
   event.preventDefault();
 
-  console.log("deleting contact: %s", event.data);
+  console.log("deleting contact: %O", event.data);
+  outbound_api.deleteContactlistsContactlistIdContactsContactId(event.data.contactListId, event.data.id)
+    .done(function() { window.location.reload(); })
+    .fail(function(error){ console.error(error); });
 }
 </script>

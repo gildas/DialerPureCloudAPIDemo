@@ -10,15 +10,16 @@ function render_error(error){
   $('#flash').show();
 };
 
-function RestRequest(method, path, max_tries, timeout, body) {
+function RestRequest(method, path, max_tries, timeout, api_version, body) {
+  api_version = (typeof api_version === 'undefined') ? 1 : api_version;
   return $.ajax({
     method: method,
-    url: 'https://api.mypurecloud.' + purecloud_region + '/api/v1' + path,
+    url: 'https://api.' + purecloud_session.environment() + '/api/v' + api_version + path,
     headers: {
       'Accept':       'application/json',
       'Content-Type': 'application/json',
     },
-    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_session.getAuthToken()); },
+    beforeSend: function(xhr) { xhr.setRequestHeader('Authorization', 'bearer ' + purecloud_session.authToken()); },
     timeout: timeout || 5000,
     shouldRetry: max_tries || 5,
     data: (body != null || body != undefined) ? JSON.stringify(body) : null,

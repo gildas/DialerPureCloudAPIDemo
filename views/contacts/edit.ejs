@@ -43,11 +43,11 @@ function initialize_view()
   update_contact = new StateButton('update_contact', on_click_update_contact);
 
   console.log('Loading ContactList <%= contactlist_id %>');
-  outbound_api.getContactlist('<%= contactlist_id %>', true, true, true)
+  outbound_api.getContactlistsContactlistId('<%= contactlist_id %>', true, true, true)
     .done(function(data) {
       contactlist = data;
       console.log('Loading Contact <%= id %>');
-      outbound_api.getContactlistContact('<%= contactlist_id %>', '<%= id %>')
+      outbound_api.getContactlistsContactlistIdContactsContactId('<%= contactlist_id %>', '<%= id %>')
         .done(view_contact)
         .fail(function(error){ console.error(error); });
     })
@@ -89,7 +89,7 @@ function on_click_update_contact(event)
     contact.data[column] = $('#' + column.replace( /([\/ \.\?])/g, "_")).val();
   });
   console.log("Updating Contact: %O", contact);
-  outbound_api.putContactlistContact(contactlist.id, contact.id, contact)
+  outbound_api.putContactlistsContactlistIdContactsContactId(contactlist.id, contact.id, contact)
     .done(function(){
     console.log("Successfuly added!");
     update_contact.processed();

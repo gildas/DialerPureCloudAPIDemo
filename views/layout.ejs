@@ -123,16 +123,24 @@
         if (event) { event.preventDefault(); }
         console.group('Logging in...');
         organization_id   = organization_id || $(this).attr('data-orgid');
+        organization_name = $(this).text()  || organization_id;
         region_suffix     = region_suffix   || $(this).attr('data-region_suffix');
         application_id    = application_id  || $(this).attr('data-appid');
         Cookies.set('PureCloud_region',          region_suffix);
         Cookies.set('PureCloud_organization_id', organization_id);
         Cookies.set('PureCloud_application_id',  application_id);
 
-        console.log("Logging in %s on mypurecloud.%s...", $(this).text(),  region_suffix);
-        purecloud_session.authorize(application_id, window.location.href, null, 'mypurecloud.' + region_suffix)
+        console.log("Authorizing with organization \"%s\" on mypurecloud.%s...", organization_name,  region_suffix);
+        purecloud_session.environment( 'mypurecloud.' + region_suffix);
+        purecloud_session.authorize(application_id, window.location.href, null)
           .done(function(){
-            console.log("PureCloud Token: %s", purecloud_session.getAuthToken());
+            if (!purecloud_session.hasAuthorizationToken())
+            {
+              console.error("Failure logging in, nuking PureCloud session");
+              purecloud_session.logout();
+              window.location.replace('/');
+            }
+            console.log("PureCloud Token: %s", purecloud_session.authToken());
 
             $('#login_off #icon').addClass('glyphicon-log-out');
             $('#login_off #text').text($('#login_off').attr('data-logoff'));
@@ -151,12 +159,16 @@
                     method: 'POST',
                     url: '/login',
                     data: {
-                      token:           purecloud_session.getAuthToken(),
+                      token:           purecloud_session.authToken(),
                       user:            JSON.stringify(user),
                       organization_id: organization_id,
                     },
                 })
                 .done(function(){ console.log("Current user updated"); });
+              })
+              .fail(function(error){
+                console.error(error);
+                purecloud_session.logout();
               });
           });
         console.groupEnd();
@@ -190,28 +202,45 @@
             if (components.length > 0) { fragment_parms[components[0]] = components[1]; }
           });
           console.log("Fragment Parameters: %O", fragment_parms);
-          if (fragment_parms['error'])
-          {
+          if (fragment_parms['error']) {
             console.error("Error: %s", fragment_parms['error']);
             $('#flash #text').text(fragment_parms['error']);
             $('#flash').addClass('alert-danger');
             $('#flash').show();
           }
+          if (fragment_parms['access_token']) {
+            console.log("Fragments contain a Token: %s", fragment_parms['access_token']);
+          }
+          if (fragment_parms['state']) {
+            console.log("Fragments contain a state: %s", fragment_parms['state']);
+          }
           console.groupEnd();
         }
-        purecloud_session      = new PureCloudSession();
+        if ((typeof window !== 'undefined') && window.localStorage && window.localStorage.authtoken) {
+          var access_token = window.localStorage.authtoken;
+
+          console.log("Browser local storage contains a Token: %s", access_token);
+            if (access_token == null || access_token == undefined || access_token === 'null') {
+              console.log("Token is invalid, deleting it");
+              delete window.localStorage.authtoken;
+            }
+        }
         purecloud_region       = Cookies.get('PureCloud_region');
         purecloud_organization = Cookies.get('PureCloud_organization_id');
         purecloud_application  = Cookies.get('PureCloud_application_id');
+        purecloud_session      = new PureCloudSession(purecloud_region ? ('mypurecloud.' + purecloud_region) : null);
 
+        <% if (settings.env === 'development') { %>
+        purecloud_session.debug(true);
+        <% } %>
         //purecloud_session.debug(true);
         <% if (purecloud_token) { %>
         console.log("Received token from Web Session: <%= purecloud_token %>");
-        purecloud_session.setAuthToken("<%= purecloud_token %>");
+        purecloud_session.authToken("<%= purecloud_token %>");
         <% } %>
         if (purecloud_session.hasAuthorizationToken())
         {
-          console.log("PureCloud Session has an authorization Token");
+          console.log("PureCloud Session has an authorization Token: %s", purecloud_session.authToken());
           // This will verify the token is good as well as setting the environment properly.
           login(null, purecloud_region, purecloud_organization, purecloud_application);
         }
