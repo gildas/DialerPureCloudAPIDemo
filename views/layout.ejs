@@ -133,7 +133,7 @@
         console.log("Authorizing with organization \"%s\" on mypurecloud.%s...", organization_name, region_id);
         purecloud_session.environment( 'mypurecloud.' + region_id);
         purecloud_session.authorize(application_id, window.location.href, null)
-          .done(function(){
+          .done(function(user){
             if (!purecloud_session.hasAuthorizationToken())
             {
               console.error("Failure logging in, nuking PureCloud session");
@@ -150,26 +150,17 @@
             $('.logged_in #text_ok').show();
             $('.logged_in #text_ng').hide();
             $('#login_off').show();
-            new UsersApi(purecloud_session).getMe()
-              .done(function(user){
-                console.log('Logged in user: %O', user);
-                $('#current_user #user').text(user.displayName);
-                $('#current_user').show();
-                $.ajax({
-                    method: 'POST',
-                    url: '/login',
-                    data: {
-                      token:           purecloud_session.authToken(),
-                      user:            JSON.stringify(user),
-                      organization_id: organization_id,
-                    },
-                })
-                .done(function(){ console.log("Current user updated"); });
-              })
-              .fail(function(error){
-                console.error(error);
-                purecloud_session.logout();
-              });
+            $('#current_user #user').text(user.name);
+            $('#current_user').show();
+            $.ajax({
+              method: 'POST',
+              url: '/login',
+              data: {
+                token:           purecloud_session.authToken(),
+                user:            JSON.stringify(user),
+                organization_id: organization_id,
+              },
+            }).done(function(){ console.log("Current user updated"); });
           });
         console.groupEnd();
       }
@@ -228,7 +219,7 @@
         purecloud_region       = Cookies.get('PureCloud_region');
         purecloud_organization = Cookies.get('PureCloud_organization_id');
         purecloud_application  = Cookies.get('PureCloud_application_id');
-        purecloud_session      = new PureCloudSession(purecloud_region ? ('mypurecloud.' + purecloud_region) : null);
+        purecloud_session      = new PureCloudSession();
 
         <% if (settings.env === 'development') { %>
         purecloud_session.debug(true);
