@@ -1,32 +1,58 @@
-var package_info=require('./package.json');
-var express = require('express');
-var engine = require('ejs-locals');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var gitrev = require('git-rev');
+#!/usr/bin/env node
+
+var app_info     = require('./package.json');
+var fs           = require('fs');
+var path         = require('path');
+var config       = require('nconf');
+var gitrev       = require('git-rev');
+var debug        = require('debug')('RecordPlayer:server');
+var logger       = require('morgan');
+var express      = require('express');
+var bodyParser   = require('body-parser');
 var cookieParser = require('cookie-parser');
-var session = require('express-session');
-var bodyParser = require('body-parser');
+var session      = require('express-session');
+var engine       = require('ejs-locals');
+var favicon      = require('serve-favicon');
+var http         = require('http');
 
-var routes        = require('./routes/index');
-var campaigns     = require('./routes/campaigns');
-var contactlists  = require('./routes/contactlists');
-var contacts      = require('./routes/contacts');
-var skills        = require('./routes/skills');
-
+/**
+ * Create the application.
+ */
 var app = express();
 
-var git_commit = '';
-var git_branch = '';
+/**
+ * Retrieve the configuration
+ *   Order: CLI, Environment, config file, defaults.
+ *   Reminder: When running through foreman (nf), the port will be set to 5000 via the environment
+ */
+config.argv({
+  port: { alias: 'p', describe: 'Make the server listen to this port' }
+})
+.env({ separator: '_', lowerCase: true })
+.file({ file: './config.json' })
+.defaults({
+  port: 3000,
+  purecloud: {
+    "organizations": [
+    ]
+  },
+});
 
-gitrev.short(function(value)  { git_commit = value });
-gitrev.branch(function(value) { git_branch = value });
+/**
+ * Environment and git information
+ */
+console.log("Version: %s (%s)", app_info.version, app.get('env'));
+gitrev.short(function(value)  { app.set('git_commit', value); console.log('Git commit: ' + value); });
+gitrev.branch(function(value) { app.set('git_branch', value); console.log('Git branch: ' + value); });
+gitrev.tag(function(value)    { app.set('git_tag', value);    console.log('Git tag: '    + value); });
 
-// view engine setup
+/**
+ * Configure the application.
+ */
+app.set('port', config.get('port'));
 app.set('views', path.join(__dirname, 'views'));
-app.engine('ejs', engine);
 app.set('view engine', 'ejs');
+app.engine('ejs', engine);
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
@@ -41,59 +67,64 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/bower_components', express.static(path.join(__dirname, '/bower_components')));
 
+/**
+ * Get PureCloud Organizations and store them in Express.
+ */
+app.set('purecloud_organizations', config.get('purecloud:organizations'));
+console.log("Organizations: ", app.get('purecloud_organizations'));
+
+/**
+ * Configure the routes.
+ */
+
 // Common tracing and locals
 app.use(function(req, res, next) {
   console.log("%s %s", req.method, req.path);
   console.log('Session id: ' + req.session.id);
   if (req.session.token) { console.log('Session Token: ' + req.session.token); }
   if (req.session.user)  { console.log('Session user:  ' + req.session.user.username); }
-  res.locals.purecloud_organizations = app.get('organizations');
+  res.locals.purecloud_organizations = app.get('purecloud_organizations');
   res.locals.purecloud_token         = req.session.token;
   res.locals.current_user            = req.session.user;
-  res.locals.git_commit              = git_commit;
-  res.locals.git_branch              = git_branch;
-  res.locals.app_version             = package_info.version;
-
+  res.locals.git_commit              = app.get('git_commit');
+  res.locals.git_branch              = app.get('git_branch');
+  res.locals.app_version             = app_info.version;
   next();
 });
 
-app.use('/', routes);
-app.use('/campaigns', campaigns);
-app.use('/contactlists', contactlists);
-app.use('/contact_lists', contactlists);
-app.use('/contacts', contacts);
-app.use('/skills', skills);
+// Application routes
+app.use('/',              require('./routes/index'));
+app.use('/campaigns',     require('./routes/campaigns'));
+app.use('/contactlists',  require('./routes/contactlists'));
+app.use('/contact_lists', require('./routes/contacts'));
+app.use('/contacts',      require('./routes/contacts'));
+app.use('/skills',        require('./routes/skills'));
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
+// Error routes
+app.use(function(req, res, next) { // catch 404 and forward to error handler
   var err = new Error('Not Found');
   err.status = 404;
   next(err);
 });
 
-// error handlers
-
-// development error handler
-// will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res, next) {
+  app.use(function(err, req, res, next) { // development error handler (with stacktrace)
     res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
+    res.render('error', { message: err.message, error: err });
+  });
+} else {
+  app.use(function(err, req, res, next) { // production error handler (without stacktraces)
+    res.status(err.status || 500);
+    res.render('error', { message: err.message, error: {} });
   });
 }
 
-// production error handler
-// no stacktraces leaked to user
-app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
-});
+/**
+ * Create HTTP server.
+ */
+app.set('server', app.listen(config.get('port'), function(){
+  console.log("Listening on port %s", config.get('port'));
+}));
 
-
-module.exports = app;
+// Expose app
+exports = module.exports = app;

@@ -13,21 +13,34 @@ Installation
 
 First, we need to install [Node.js](https://nodejs.org) and [Bower](http://bower.io):  
 
-1. On Mac OS/X
+1. Using [Docker](http://docker.com)
+   Create a docker image from the node.js official image (All is set already in the project's Dockerfile)  
+   ```sh
+   docker build --tag recordplayer .
+   ```
+
+   Then, run a container off of it:
+   ```sh
+   docker run -p 3000:5000 --name recordplayer -v $(pwd):/usr/local/src --sig-proxy=false recordplayer nf start
+   ```
+
+   You can also run the `drun` script in the main folder of the project that will do everything for you.  
+
+2. On Mac OS/X
   If you use [Homebrew](http://brew.sh), simply run:
   ```sh
   brew install nodejs
   ```
   Otherwise, go to [Node.js downloads](https://nodejs.org/en/download) and follow the instructions.
 
-2. On  Windows
+3. On  Windows
   If you use [chocolatey](https://chocolatey.org), simply run in an *administrator* shell:
   ```posh
   cinst -y nodejs
   ```
   Otherwise, go to [Node.js downloads](https://nodejs.org/en/download) and follow the instructions.
 
-3. On Linux
+4. On Linux
   Debian like distributions would use:
   ```sh
   sudo apt-get install -y build-essential

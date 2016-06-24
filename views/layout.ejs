@@ -46,11 +46,11 @@
                 <button id="login_off" class="btn btn-primary active dropdown-toggle" data-login="Log in" data-logoff="Log off" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                   <span id="icon" class="glyphicon"></span>&nbsp;<span id="text">Log in</span>
                   <span class="caret"></span>
-                  <span id="current_org" class="hidden" data-orgid="" data-appid="" data-region_suffix=""></span>
+                  <span id="current_org" class="hidden" data-orgid="" data-appid="" data-region_id=""></span>
                 </button>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdown_org">
                   <% purecloud_organizations.forEach(function(organization){ %>
-                    <li><a href="#" data-orgid="<%= organization.id %>" data-appid="<%= organization.application %>" data-region_suffix="<%= organization.region.suffix %>"><%= organization.name %> (<%= organization.region.id %>)</a></li>
+                    <li><a href="#" data-orgid="<%= organization.id %>" data-appid="<%= organization.application %>" data-region_id="<%= organization.region_id %>"><%= organization.name %> (<%= organization.region_id %>)</a></li>
                   <% }); %>
                 </ul>
               </div>
@@ -118,20 +118,20 @@
     <script src="/javascripts/helpers.js"></script>
 <% } %>
     <script language='javascript'>
-      function login(event, region_suffix, organization_id, application_id)
+      function login(event, region_id, organization_id, application_id)
       {
         if (event) { event.preventDefault(); }
         console.group('Logging in...');
         organization_id   = organization_id || $(this).attr('data-orgid');
         organization_name = $(this).text()  || organization_id;
-        region_suffix     = region_suffix   || $(this).attr('data-region_suffix');
+        region_id         = region_id       || $(this).attr('data-region_id');
         application_id    = application_id  || $(this).attr('data-appid');
-        Cookies.set('PureCloud_region',          region_suffix);
-        Cookies.set('PureCloud_organization_id', organization_id);
-        Cookies.set('PureCloud_application_id',  application_id);
+        if (region_id)       Cookies.set('PureCloud_region',          region_id);
+        if (organization_id) Cookies.set('PureCloud_organization_id', organization_id);
+        if (application_id)  Cookies.set('PureCloud_application_id',  application_id);
 
-        console.log("Authorizing with organization \"%s\" on mypurecloud.%s...", organization_name,  region_suffix);
-        purecloud_session.environment( 'mypurecloud.' + region_suffix);
+        console.log("Authorizing with organization \"%s\" on mypurecloud.%s...", organization_name, region_id);
+        purecloud_session.environment( 'mypurecloud.' + region_id);
         purecloud_session.authorize(application_id, window.location.href, null)
           .done(function(){
             if (!purecloud_session.hasAuthorizationToken())
@@ -220,7 +220,7 @@
           var access_token = window.localStorage.authtoken;
 
           console.log("Browser local storage contains a Token: %s", access_token);
-            if (access_token == null || access_token == undefined || access_token === 'null') {
+            if (access_token === null || access_token === undefined || access_token === 'null') {
               console.log("Token is invalid, deleting it");
               delete window.localStorage.authtoken;
             }
