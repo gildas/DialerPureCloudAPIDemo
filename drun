@@ -1,0 +1,24 @@
+#! /usr/bin/env bash
+
+IMAGE=dialerpurecloud
+CONTAINER=dialerpurecloud
+
+if [[ -n $(docker ps --all | grep $CONTAINER) ]]; then
+  echo "Removing docker container $CONTAINER"
+  docker rm $CONTAINER
+  status=$? ; [[ $status != 0 ]] && echo "Error $status: cannot remove container $CONTAINER" && exit $status
+fi
+
+if [[ $1 == "--rebuild" && -n $(docker images | grep $IMAGE) ]]; then
+  echo "Removing docker image $IMAGE"
+  docker rmi $IMAGE
+  status=$? ; [[ $status != 0 ]] && echo "Error $status: cannot remove docker image $IMAGE" && exit $status
+fi
+
+if [[ -z $(docker images | grep $IMAGE) ]]; then
+  echo "Building docker image $IMAGE"
+  docker build --tag $IMAGE .
+  status=$? ; [[ $status != 0 ]] && echo "Error $status: cannot build docker image $IMAGE" && exit $status
+fi
+
+docker run -p 3000:3000 --name $CONTAINER -v "$(pwd):/usr/local/src" --user www-data --rm $IMAGE npm start
