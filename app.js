@@ -72,6 +72,10 @@ app.use('/bower_components', express.static(path.join(__dirname, '/bower_compone
  */
 app.set('purecloud_organizations', config.get('purecloud:organizations'));
 console.log("Organizations: ", app.get('purecloud_organizations'));
+app.get('purecloud_organizations').forEach(function(organization){
+  console.log("Organization: id=%s, name=%s, region: %s", organization.id, organization.name, organization.region_id);
+});
+
 
 /**
  * Configure the routes.
