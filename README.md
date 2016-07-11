@@ -108,27 +108,27 @@ Run all commands from the *root* of the project.
 
 1. Create an [account](https://signup.heroku.com/signup/dc) with heroku or make sure you have one already.
 2. Make sure you have the [Heroku toolbelt](https://devcenter.heroku.com/articles/getting-started-with-nodejs#set-up) loaded... 
-  Check their [getting started](https://devcenter.heroku.com/articles/getting-started-with-nodejs) document otherwise.  
-  Make sure node.js is installed as well (See the Local Installation section)
+   Check their [getting started](https://devcenter.heroku.com/articles/getting-started-with-nodejs) document otherwise.  
+   Make sure node.js is installed as well (See the Local Installation section)
 3. Login your heroku account
    ```sh
    heroku login
    ```
-4. Clone the repository from github:
-  ```sh
-  git clone https://github.com/gildas/DialerPureCloudAPIDemo.git
-  ```
-5. Create the application, from the repository folder:
+4. Clone the repository from github:  
+   ```sh
+   git clone https://github.com/gildas/DialerPureCloudAPIDemo.git
+   ```
+5. Create the application, from the repository folder:  
    ```sh
    heroku create
    ```
 6. Configure your PureCloud OAUTH Application to accept the URL that was just created.  
    For instance: `http://sharp-rain-871.herokuapp.com/`
-7. Deploy the application to your [Heroku apps](https://dashboard.heroku.com/apps).
+7. Deploy the application to your [Heroku apps](https://dashboard.heroku.com/apps).  
    ```sh
    git push heroku master
    ```
-8. Configure the instance with the PureCloud organizations you want:
+8. Configure the instance with the PureCloud organizations you want:  
    ```sh
    heroku config:set PURECLOUD_ORGANIZATIONS="$(jq -cM '.purecloud.organizations' config.json)"
    ```
@@ -138,14 +138,14 @@ Run all commands from the *root* of the project.
    heroku config:set PURECLOUD_ORGANIZATIONS=((Get-Content config.json) -join "`n" | ConvertFrom-Json | Select purecloud | select organizations | ConvertTo-Json -Compress)
    ```
    (_To be tested!_)
-9. Make sure the instance is running
+9. Make sure the instance is running  
    ```sh
    heroku ps:scale web=1
    ```
    Here I give only 1 Dyno, for a quick test, that's more than enough.  
    In production, we should use more dynos.
 10. Have fun a use it!  
-   Either open your browser and go to the web site created in 3, or type:
+   Either open your browser and go to the web site created in 3, or type:  
    ```sh
    heroku open
    ```
