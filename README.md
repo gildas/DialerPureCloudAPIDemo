@@ -128,7 +128,7 @@ Run all commands from the *root* of the project.
    ```sh
    git push heroku master
    ```
-8. Configure the instance with the PureCloud organizations you want:  
+8. Configure the instance with the PureCloud organizations you want (be sure to create the config.json file [see the next section]):  
    ```sh
    heroku config:set PURECLOUD_ORGANIZATIONS="$(jq -cM '.purecloud.organizations' config.json)"
    ```
