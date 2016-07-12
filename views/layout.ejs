@@ -49,7 +49,6 @@
                   <span id="current_org" class="hidden" data-orgid="" data-appid="" data-region_id=""></span>
                 </button>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="dropdown_org">
-                  <% console.log("organizations: %O", purecloud_organizations) %>
                   <% purecloud_organizations.forEach(function(organization){ %>
                     <li><a href="#" data-orgid="<%= organization.id %>" data-appid="<%= organization.application %>" data-region_id="<%= organization.region_id %>"><%= organization.name %> (<%= organization.region_id %>)</a></li>
                   <% }); %>
