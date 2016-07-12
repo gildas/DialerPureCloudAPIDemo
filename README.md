@@ -155,6 +155,8 @@ To see if it is all smooth, you can check the logs at:
 heroku logs --tail
 ```
 
+Checkout our own Heroku dyno: http://purecloud-dialer.herokuapp.com
+
 Configuration
 -------------
 
