@@ -70,11 +70,13 @@ app.use('/bower_components', express.static(path.join(__dirname, '/bower_compone
 /**
  * Get PureCloud Organizations and store them in Express.
  */
-app.set('purecloud_organizations', config.get('purecloud:organizations'));
+try {
+  app.set('purecloud_organizations', JSON.parse(config.get('purecloud:organizations')));
+} catch(error) {
+  console.error("Error while parsing: %s", config.get('purecloud:organizations'));
+  app.set('purecloud_organizations', []);
+}
 console.log("Organizations: ", app.get('purecloud_organizations'));
-app.get('purecloud_organizations').forEach(function(organization){
-  console.log("Organization: id=%s, name=%s, region: %s", organization.id, organization.name, organization.region_id);
-});
 
 
 /**
